@@ -15,7 +15,7 @@ USE ALWAYS THE PLUGIN "development-skills" FOR EVERY TASK ON THIS PROJECT (BRAIN
 ### What to do during every task
 
 1. **Document as you go.** Write down patterns, gotchas, data shapes, naming conventions, workarounds immediately. Default: CLAUDE.md for project-wide, MEMORY.md for cross-session.
-1a. **Code is documentation.** Comments explain *why*, not *what*. See Pillar #5.
+1a. **Code is documentation.** Comments explain *why*, not *what*. See Pillar #4.
 2. **Remove ambiguity for your future self.** If you investigated something, write the answer where you'll find it next time.
 3. **Use the right document:**
 

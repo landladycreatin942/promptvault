@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="200" viewBox="0 0 900 200">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="200" fill="url(#bg2)" rx="12"/>
+
+  <!-- history.jsonl -->
+  <g transform="translate(40, 60)">
+    <rect width="160" height="80" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+    <text x="80" y="35" text-anchor="middle" font-family="monospace" font-size="13" fill="#3b82f6">history.jsonl</text>
+    <text x="80" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">3000+ prompts</text>
+    <text x="80" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">900+ sessions</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <g transform="translate(210, 90)">
+    <line x1="0" y1="10" x2="60" y2="10" stroke="#475569" stroke-width="2"/>
+    <polygon points="60,4 72,10 60,16" fill="#475569"/>
+    <text x="36" y="0" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#64748b">sync</text>
+  </g>
+
+  <!-- promptvault-sync -->
+  <g transform="translate(290, 50)">
+    <rect width="140" height="100" rx="8" fill="#1e293b" stroke="#8b5cf6" stroke-width="2"/>
+    <text x="70" y="30" text-anchor="middle" font-family="monospace" font-size="12" fill="#8b5cf6">promptvault</text>
+    <text x="70" y="48" text-anchor="middle" font-family="monospace" font-size="12" fill="#8b5cf6">-sync</text>
+    <text x="70" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Parse, group,</text>
+    <text x="70" y="87" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">generate</text>
+  </g>
+
+  <!-- Arrow 2 top -->
+  <g transform="translate(440, 70)">
+    <line x1="0" y1="0" x2="60" y2="-20" stroke="#475569" stroke-width="2"/>
+    <polygon points="57,-27 70,-20 57,-14" fill="#475569"/>
+  </g>
+
+  <!-- Arrow 2 bottom -->
+  <g transform="translate(440, 120)">
+    <line x1="0" y1="0" x2="60" y2="20" stroke="#475569" stroke-width="2"/>
+    <polygon points="57,14 70,20 57,27" fill="#475569"/>
+  </g>
+
+  <!-- Markdown vault -->
+  <g transform="translate(510, 20)">
+    <rect width="160" height="70" rx="8" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>
+    <text x="80" y="28" text-anchor="middle" font-family="monospace" font-size="13" fill="#22c55e">vault/*.md</text>
+    <text x="80" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Obsidian-compatible</text>
+    <text x="80" y="62" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">YYYY/MM/ structure</text>
+  </g>
+
+  <!-- SQLite DB -->
+  <g transform="translate(510, 110)">
+    <rect width="160" height="70" rx="8" fill="#1e293b" stroke="#eab308" stroke-width="2"/>
+    <text x="80" y="28" text-anchor="middle" font-family="monospace" font-size="13" fill="#eab308">prompts.db</text>
+    <text x="80" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">SQLite + FTS5</text>
+    <text x="80" y="62" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Full-text search</text>
+  </g>
+
+  <!-- Arrow 3 -->
+  <g transform="translate(680, 145)">
+    <line x1="0" y1="0" x2="60" y2="0" stroke="#475569" stroke-width="2"/>
+    <polygon points="60,-6 72,0 60,6" fill="#475569"/>
+  </g>
+
+  <!-- Search CLI -->
+  <g transform="translate(760, 110)">
+    <rect width="120" height="70" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="2"/>
+    <text x="60" y="28" text-anchor="middle" font-family="monospace" font-size="13" fill="#f97316">promptvault</text>
+    <text x="60" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">search, recent</text>
+    <text x="60" y="62" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">list, stats</text>
+  </g>
+</svg>

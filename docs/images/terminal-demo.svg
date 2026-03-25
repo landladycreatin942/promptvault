@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="tbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1e2e"/>
+      <stop offset="100%" style="stop-color:#181825"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Window -->
+  <rect width="800" height="520" rx="12" fill="url(#tbg)" stroke="#313244" stroke-width="1"/>
+
+  <!-- Title bar -->
+  <rect width="800" height="36" rx="12" fill="#1e1e2e"/>
+  <rect y="24" width="800" height="12" fill="#1e1e2e"/>
+  <circle cx="20" cy="18" r="6" fill="#f38ba8"/>
+  <circle cx="40" cy="18" r="6" fill="#f9e2af"/>
+  <circle cx="60" cy="18" r="6" fill="#a6e3a1"/>
+  <text x="400" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#6c7086">promptvault — Terminal</text>
+
+  <!-- Stats command -->
+  <text x="20" y="64" font-family="monospace" font-size="14" fill="#a6e3a1">$</text>
+  <text x="36" y="64" font-family="monospace" font-size="14" fill="#cdd6f4">promptvault stats</text>
+
+  <text x="20" y="96" font-family="monospace" font-size="14" font-weight="bold" fill="#cdd6f4">Prompt Vault Stats</text>
+
+  <text x="20" y="124" font-family="monospace" font-size="13" fill="#a6adc8">  Conversations:</text>
+  <text x="200" y="124" font-family="monospace" font-size="13" fill="#89b4fa">895</text>
+  <text x="20" y="144" font-family="monospace" font-size="13" fill="#a6adc8">  Prompts:</text>
+  <text x="200" y="144" font-family="monospace" font-size="13" fill="#89b4fa">2672</text>
+  <text x="20" y="164" font-family="monospace" font-size="13" fill="#a6adc8">  Projects:</text>
+  <text x="200" y="164" font-family="monospace" font-size="13" fill="#89b4fa">25</text>
+  <text x="20" y="184" font-family="monospace" font-size="13" fill="#a6adc8">  Date range:</text>
+  <text x="200" y="184" font-family="monospace" font-size="13" fill="#89b4fa">2026-01-19 — 2026-03-25</text>
+
+  <text x="20" y="214" font-family="monospace" font-size="13" font-weight="bold" fill="#cdd6f4">  Top projects:</text>
+  <text x="30" y="234" font-family="monospace" font-size="12" fill="#a6adc8">  shipping-scheduler</text>
+  <text x="250" y="234" font-family="monospace" font-size="12" fill="#f9e2af">████████████████████████████</text>
+  <text x="560" y="234" font-family="monospace" font-size="12" fill="#a6adc8">287</text>
+  <text x="30" y="254" font-family="monospace" font-size="12" fill="#a6adc8">  ai-utils</text>
+  <text x="250" y="254" font-family="monospace" font-size="12" fill="#f9e2af">█████████████</text>
+  <text x="418" y="254" font-family="monospace" font-size="12" fill="#a6adc8">135</text>
+  <text x="30" y="274" font-family="monospace" font-size="12" fill="#a6adc8">  order-extraction</text>
+  <text x="250" y="274" font-family="monospace" font-size="12" fill="#f9e2af">████████████</text>
+  <text x="406" y="274" font-family="monospace" font-size="12" fill="#a6adc8">132</text>
+
+  <!-- Search command -->
+  <text x="20" y="314" font-family="monospace" font-size="14" fill="#a6e3a1">$</text>
+  <text x="36" y="314" font-family="monospace" font-size="14" fill="#cdd6f4">promptvault search "database migration"</text>
+
+  <text x="20" y="346" font-family="monospace" font-size="13" font-weight="bold" fill="#cdd6f4">Found 8 results for 'database migration':</text>
+
+  <text x="30" y="376" font-family="monospace" font-size="12" fill="#89b4fa">2026-03-20 14:22</text>
+  <text x="210" y="376" font-family="monospace" font-size="12" font-weight="bold" fill="#cdd6f4">add a database migration for the new shipping_status column</text>
+  <text x="30" y="394" font-family="monospace" font-size="12" fill="#6c7086">shipping-scheduler-refactor | shipping-scheduler | 2026/03/...</text>
+
+  <text x="30" y="424" font-family="monospace" font-size="12" fill="#89b4fa">2026-03-15 09:41</text>
+  <text x="210" y="424" font-family="monospace" font-size="12" font-weight="bold" fill="#cdd6f4">create alembic migration to add indexes on order_date</text>
+  <text x="30" y="442" font-family="monospace" font-size="12" fill="#6c7086">order-extraction-indexes | order-extraction | 2026/03/...</text>
+
+  <text x="30" y="472" font-family="monospace" font-size="12" fill="#89b4fa">2026-02-28 16:05</text>
+  <text x="210" y="472" font-family="monospace" font-size="12" font-weight="bold" fill="#cdd6f4">rollback the migration, it broke the staging environment</text>
+  <text x="30" y="490" font-family="monospace" font-size="12" fill="#6c7086">staging-hotfix | shipping-scheduler | 2026/02/...</text>
+</svg>

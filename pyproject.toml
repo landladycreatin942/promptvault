@@ -1,0 +1,44 @@
+[project]
+name = "promptvault"
+version = "0.0.1"
+description = "Turn your Claude Code conversation history into a searchable markdown library + SQLite database"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Silvio Pavanetto"},
+]
+keywords = ["claude", "claude-code", "prompt", "history", "obsidian", "sqlite"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+]
+
+[project.scripts]
+promptvault = "promptvault.search:main"
+promptvault-sync = "promptvault.sync:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+
+[tool.commitizen]
+version = "0.0.1"
+tag_format = "$version"
+version_files = ["VERSION", "pyproject.toml:version", "promptvault/__init__.py:__version__"]
+bump_message = "bump: version $current_version → $new_version"
+update_changelog_on_bump = true
+annotated_tag = true
+
+[tool.pytest.ini_options]
+minversion = "7.3"
+addopts = "-ra -q"
+testpaths = ["tests"]
+log_cli = true

@@ -35,7 +35,9 @@ Claude Code stores conversation history in `~/.claude/history.jsonl` — a raw, 
 - **Not persistent.** Claude Code compacts and deletes old session files without warning.
 - **Not shareable.** Raw JSONL doesn't open in Obsidian or publish on GitHub.
 
-**promptvault** turns that history into a searchable markdown library + SQLite database. Browse conversations in Obsidian, or search them from the terminal. Zero dependencies — pure Python stdlib.
+**promptvault** turns that history into a searchable markdown library + SQLite database. Browse conversations in Obsidian, or search them instantly from the terminal with an interactive fzf-powered interface.
+
+Zero Python dependencies. Pure stdlib.
 
 <p align="center">
   <img src="docs/images/terminal-demo.svg" alt="promptvault in action" width="100%"/>
@@ -53,13 +55,25 @@ Claude Code stores conversation history in `~/.claude/history.jsonl` — a raw, 
 
 1. **Markdown vault** — One `.md` file per conversation, organized by `YYYY/MM/`, with YAML frontmatter. Drop the folder into Obsidian and browse your prompt history.
 
-2. **SQLite database** — FTS5 full-text search with BM25 ranking. Search 3000+ prompts in milliseconds.
+2. **SQLite database** — FTS5 full-text search with BM25 ranking. Search thousands of prompts in milliseconds.
 
 The sync is **idempotent** — it always rebuilds from `history.jsonl`, so it's impossible to reach a bad state.
+
+**Bonus features:**
+- `[Pasted text #N +M lines]` placeholders are automatically resolved with the actual pasted content
+- Consecutive duplicate prompts within a session are deduplicated
+- Slash commands (`/help`, `/compact`, etc.) are filtered out
 
 ---
 
 ## Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- [fzf](https://github.com/junegunn/fzf) — for interactive search (`brew install fzf`)
+
+### Install
 
 ```bash
 git clone https://github.com/reidemeister94/promptvault.git
@@ -67,13 +81,15 @@ cd promptvault
 pip install -e .
 ```
 
+### Sync your history
+
 ```bash
 promptvault-sync
 ```
 
 ```
-Reading history from /Users/you/.claude/history.jsonl...
-Found 895 conversations, 3009 prompts
+Reading history from ~/.claude/history.jsonl...
+Found 899 conversations, 2890 prompts
 Generating markdown vault...
 Building SQLite database...
 
@@ -81,30 +97,47 @@ Done! Vault: ~/.claude/prompt-library/vault
 Database: ~/.claude/prompt-library/prompts.db
 ```
 
+### Search
+
 ```bash
-promptvault search "database migration"
+promptvault                        # interactive browser (all conversations)
+promptvault search "migration"     # search + interactive results
 ```
+
+That's it. Your entire Claude Code history is now searchable.
 
 ---
 
 ## Commands
 
+All commands launch an **interactive fzf interface** by default (when fzf is installed and stdout is a tty). Use `--no-fzf` for plain text output.
+
+The interactive mode shows:
+- **Left panel** — conversations with date, prompt count, project, and title
+- **Right panel** — live preview of all prompts in the selected conversation, with search terms highlighted
+- **Controls** — `↑↓` navigate, `Enter` opens in `$EDITOR`, `Esc` quits, type to filter
+
+### `promptvault`
+
+Launch the interactive conversation browser. No arguments needed — browse all conversations, type to filter.
+
 ### `promptvault search "query"`
 
-Full-text search using SQLite FTS5 with BM25 ranking.
+Full-text search using SQLite FTS5. Finds conversations containing the query, ranked by relevance.
 
 ```bash
 promptvault search "shipping scheduler"
-promptvault search "pytest fixtures" -n 5
+promptvault search "database migration"
+promptvault search "pytest fixtures" --no-fzf   # plain text output
 ```
 
 ### `promptvault recent [N]`
 
-Show most recent prompts. Defaults to 10.
+Show the most recent conversations. Defaults to 20.
 
 ```bash
-promptvault recent       # last 10
-promptvault recent 20    # last 20
+promptvault recent       # last 20 conversations
+promptvault recent 50    # last 50
 ```
 
 ### `promptvault list`
@@ -195,7 +228,7 @@ A Claude Code hook captures every prompt the moment you send it — no sync need
 
 ### Setup
 
-The hook registers automatically on install, adding a `UserPromptSubmit` entry to `~/.claude/hooks.json`:
+Add a `UserPromptSubmit` hook to `~/.claude/hooks.json`:
 
 ```json
 {
@@ -225,14 +258,22 @@ Captured prompts go to `~/.claude/prompt-library/capture.jsonl` — a real-time 
 ```
 promptvault/
 ├── promptvault/
+│   ├── __init__.py   # Package metadata
 │   ├── sync.py       # Reads history.jsonl → generates vault/ + prompts.db
-│   ├── search.py     # CLI search over SQLite FTS5
+│   ├── search.py     # Interactive fzf search + plain text CLI
 │   └── hook.py       # UserPromptSubmit hook (real-time capture)
 ├── tests/
+│   ├── conftest.py   # Shared fixtures (synthetic history.jsonl)
 │   ├── test_sync.py
 │   ├── test_search.py
 │   └── test_hook.py
 ├── pyproject.toml
+├── Makefile
+├── .pre-commit-config.yaml
+├── requirements.in
+├── requirements-dev.in
+├── VERSION
+├── LICENSE
 └── README.md
 ```
 
@@ -244,7 +285,8 @@ promptvault/
 | **Full rebuild on every sync** | Simpler than incremental — no state bugs, no dedup logic. ~1 second for 3000 prompts. |
 | **Date-based directory structure** | Flat directories are unusable at 900+ files. Project-based grouping breaks when prompts span projects. Date-based maps to Obsidian's Calendar plugin. |
 | **SQLite FTS5 for search** | Built into Python stdlib. BM25 ranking included. No external engine needed. |
-| **Zero external dependencies** | Python stdlib has everything: `json`, `sqlite3`, `pathlib`, `argparse`. |
+| **fzf for interactive UX** | Industry-standard fuzzy finder. Exact substring matching, live preview, keyboard navigation. Falls back to plain text when unavailable. |
+| **Zero Python dependencies** | Python stdlib has everything: `json`, `sqlite3`, `pathlib`, `argparse`. fzf is a system tool, not a Python package. |
 | **Hook as convenience, not requirement** | The sync script is the authoritative data path. If the hook fails, nothing is lost. |
 
 ### Environment Variables
@@ -254,6 +296,7 @@ promptvault/
 | `PROMPTVAULT_HISTORY` | `~/.claude/history.jsonl` | Claude Code history file |
 | `PROMPTVAULT_OUTPUT` | `~/.claude/prompt-library` | Output directory for vault + DB |
 | `PROMPTVAULT_DB` | `~/.claude/prompt-library/prompts.db` | SQLite database |
+| `PROMPTVAULT_VAULT` | `~/.claude/prompt-library/vault` | Markdown vault directory |
 | `PROMPTVAULT_CAPTURE_LOG` | `~/.claude/prompt-library/capture.jsonl` | Real-time capture log |
 
 ---
@@ -271,7 +314,7 @@ make lint            # Lint with ruff
 make format          # Format with ruff
 ```
 
-32 tests covering sync, search, and hook functionality. All tests use synthetic data — no dependency on real `history.jsonl`.
+36 tests covering sync, search, and hook functionality. All tests use synthetic data — no dependency on real `history.jsonl`.
 
 ---
 
@@ -291,7 +334,7 @@ make format          # Format with ruff
 Contributions welcome. Open an issue to discuss before submitting a PR.
 
 **Ideas:**
-- New search features (fuzzy search, date ranges, regex)
+- New search features (date ranges, regex)
 - Better conversation naming heuristics
 - Support for additional AI coding tools
 - Performance optimizations for very large histories

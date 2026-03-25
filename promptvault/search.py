@@ -61,65 +61,118 @@ def has_fzf() -> bool:
     return shutil.which("fzf") is not None
 
 
-def _build_fzf_lines(conn: sqlite3.Connection, query: str | None = None) -> list[str]:
-    """Build lines for fzf input. Each line: 'md_path\tdate  project  prompt_preview'."""
+def _short_project(project: str) -> str:
+    """Shorten project path to a readable name. Home dir → ~."""
+    if not project:
+        return "~"
+    name = Path(project).name
+    home_name = Path.home().name
+    if name == home_name:
+        return "~"
+    # Truncate long names
+    if len(name) > 20:
+        return name[:18] + ".."
+    return name
+
+
+def _build_conversation_lines(conn: sqlite3.Connection, query: str | None = None) -> list[str]:
+    """Build conversation lines for fzf. Format: 'md_path\\tdate  Np  project  title'."""
     if query:
-        # FTS search
-        rows = _fts_search(conn, query, limit=200)
+        # Find conversations that contain matching prompts
+        session_ids = _fts_session_ids(conn, query)
+        if not session_ids:
+            return []
+        placeholders = ",".join("?" * len(session_ids))
+        rows = conn.execute(
+            f"""
+            SELECT session_id, name, project, start_ts, end_ts, prompt_count, md_path
+            FROM conversations
+            WHERE session_id IN ({placeholders})
+            ORDER BY start_ts DESC
+            """,
+            session_ids,
+        ).fetchall()
     else:
-        # All prompts, most recent first
         rows = conn.execute(
             """
-            SELECT p.prompt_text, p.timestamp, p.project, c.name, c.md_path
-            FROM prompts p
-            JOIN conversations c ON p.session_id = c.session_id
-            ORDER BY p.timestamp DESC
-            LIMIT 5000
+            SELECT session_id, name, project, start_ts, end_ts, prompt_count, md_path
+            FROM conversations
+            ORDER BY start_ts DESC
             """
         ).fetchall()
-        # Reshape to match _fts_search output (add dummy rank)
-        rows = [(r[0], r[1], r[2], r[3], r[4], 0) for r in rows]
 
     lines = []
-    for prompt_text, ts, project, conv_name, md_path, _rank in rows:
-        project_short = Path(project).name if project else "~"
-        date_str = ts_to_short(ts)
-        prompt_clean = clean_prompt_text(prompt_text)[:150]
-        # Tab-separated: md_path is hidden field for preview, rest is display
-        line = f"{md_path}\t{date_str}  {project_short:24s}  {prompt_clean}"
+    for _sid, name, project, start_ts, _end_ts, prompt_count, md_path in rows:
+        proj = _short_project(project)
+        date_str = ts_to_short(start_ts)
+        line = f"{md_path}\t{date_str}  {prompt_count:2d}p  {proj:16s}  {name}"
         lines.append(line)
     return lines
 
 
-def _fzf_preview_script(vault_dir: Path) -> str:
-    """Shell command for fzf --preview. Reads the md file for the selected line."""
+def _fts_session_ids(conn: sqlite3.Connection, query: str) -> list[str]:
+    """Get unique session IDs matching the FTS query."""
+    sql = """
+        SELECT DISTINCT p.session_id
+        FROM prompts_fts
+        JOIN prompts p ON prompts_fts.rowid = p.id
+        WHERE prompts_fts MATCH ?
+        LIMIT 500
+    """
+    try:
+        ids = [r[0] for r in conn.execute(sql, (query,)).fetchall()]
+        if not ids and " " in query.strip():
+            words = query.strip().split()
+            or_query = " OR ".join(words)
+            ids = [r[0] for r in conn.execute(sql, (or_query,)).fetchall()]
+        return ids
+    except sqlite3.OperationalError:
+        return []
+
+
+def _fzf_preview_script(vault_dir: Path, query: str | None = None) -> str:
+    """Shell command for fzf --preview. Shows prompts with optional search highlight."""
+    if query:
+        # Use grep --color to highlight the search term in the preview
+        # Escape single quotes in query for shell safety
+        safe_q = query.replace("'", "'\\''")
+        return (
+            f"md_path=$(echo {{}} | cut -f1); "
+            f"file='{vault_dir}/'\"$md_path\"; "
+            f'if [ -f "$file" ]; then '
+            f"sed -n '/^## Prompt/,$p' \"$file\" | "
+            f"GREP_COLOR='1;33' grep --color=always -i -E '{safe_q}|$'; "
+            f"else echo 'File not found'; fi"
+        )
     return (
         f"md_path=$(echo {{}} | cut -f1); "
         f"file='{vault_dir}/'\"$md_path\"; "
-        f'if [ -f "$file" ]; then cat "$file"; else echo \'File not found\'; fi'
+        f'if [ -f "$file" ]; then '
+        f"sed -n '/^## Prompt/,$p' \"$file\"; "
+        f"else echo 'File not found'; fi"
     )
 
 
-def cmd_search_interactive(conn: sqlite3.Connection, query: str | None, vault_dir: Path):
-    """Interactive fzf-powered search."""
-    lines = _build_fzf_lines(conn, query)
-    if not lines:
-        print("No prompts found.")
-        return
-
-    fzf_input = "\n".join(lines)
-
+def _run_fzf(
+    lines: list[str],
+    vault_dir: Path,
+    query: str | None = None,
+    header: str = "↑↓ navigate · enter open · esc quit · type to filter",
+    prompt: str = "promptvault> ",
+):
+    """Run fzf with conversation lines and preview."""
     fzf_cmd = [
         "fzf",
         "--ansi",
+        "--exact",  # exact substring match, not fuzzy
         "--delimiter=\t",
         "--with-nth=2",  # display only the visible part (after tab)
         "--preview",
-        _fzf_preview_script(vault_dir),
+        _fzf_preview_script(vault_dir, query),
         "--preview-window=right:50%:wrap",
-        "--header=↑↓ navigate · enter open · esc quit · type to filter",
-        "--prompt=promptvault> ",
-        "--no-sort" if query else "--sort",  # keep FTS ranking if query
+        f"--header={header}",
+        f"--prompt={prompt}",
+        "--no-sort",  # keep our ordering (by date)
         "--height=90%",
         "--layout=reverse",
         "--border=rounded",
@@ -132,16 +185,14 @@ def cmd_search_interactive(conn: sqlite3.Connection, query: str | None, vault_di
     try:
         result = subprocess.run(
             fzf_cmd,
-            input=fzf_input,
+            input="\n".join(lines),
             capture_output=True,
             text=True,
         )
         if result.returncode == 0 and result.stdout.strip():
-            selected = result.stdout.strip()
-            md_path = selected.split("\t")[0]
+            md_path = result.stdout.strip().split("\t")[0]
             full_path = vault_dir / md_path
             if full_path.exists():
-                # Open in $EDITOR or less
                 editor = os.environ.get("EDITOR", "less")
                 subprocess.run([editor, str(full_path)])
             else:
@@ -149,6 +200,19 @@ def cmd_search_interactive(conn: sqlite3.Connection, query: str | None, vault_di
     except FileNotFoundError:
         print("fzf not found. Install it: brew install fzf", file=sys.stderr)
         sys.exit(1)
+
+
+def cmd_search_interactive(conn: sqlite3.Connection, query: str | None, vault_dir: Path):
+    """Interactive fzf-powered search with conversations."""
+    lines = _build_conversation_lines(conn, query)
+    if not lines:
+        if query:
+            print(f"No conversations found for '{query}'")
+        else:
+            print("No conversations found.")
+        return
+
+    _run_fzf(lines, vault_dir, query)
 
 
 # ---------------------------------------------------------------------------
@@ -190,7 +254,7 @@ def cmd_search_plain(conn: sqlite3.Connection, query: str, limit: int = 20):
 
     print(f"\n{BOLD}Found {len(rows)} result(s) for '{query}':{RESET}\n")
     for prompt_text, ts, project, conv_name, md_path, _rank in rows:
-        project_short = Path(project).name if project else "~"
+        project_short = _short_project(project)
         print(f"  {CYAN}{ts_to_str(ts)}{RESET}  {BOLD}{truncate(prompt_text)}{RESET}")
         print(f"  {DIM}{conv_name} | {project_short} | {md_path}{RESET}")
         print()
@@ -218,60 +282,34 @@ def cmd_search(args: argparse.Namespace, db_path: Path):
 
 
 def cmd_recent(args: argparse.Namespace, db_path: Path):
-    """Show most recent prompts — interactive with fzf, plain otherwise."""
+    """Show most recent conversations — interactive with fzf, plain otherwise."""
     conn = get_db(db_path)
-    limit = args.count or 10
+    limit = args.count or 20
     vault_dir = Path(os.environ.get("PROMPTVAULT_VAULT", str(DEFAULT_VAULT_DIR)))
     no_fzf = getattr(args, "no_fzf", False)
 
     if not no_fzf and sys.stdout.isatty() and has_fzf():
-        # Interactive: show recent prompts in fzf
         rows = conn.execute(
             """
-            SELECT p.prompt_text, p.timestamp, p.project, c.name, c.md_path
-            FROM prompts p
-            JOIN conversations c ON p.session_id = c.session_id
-            ORDER BY p.timestamp DESC
-            LIMIT ?
+            SELECT session_id, name, project, start_ts, end_ts, prompt_count, md_path
+            FROM conversations ORDER BY start_ts DESC LIMIT ?
             """,
             (limit,),
         ).fetchall()
-
         lines = []
-        for prompt_text, ts, project, conv_name, md_path in rows:
-            project_short = Path(project).name if project else "~"
-            date_str = ts_to_short(ts)
-            prompt_clean = clean_prompt_text(prompt_text)[:150]
-            lines.append(f"{md_path}\t{date_str}  {project_short:24s}  {prompt_clean}")
-
+        for _sid, name, project, start_ts, _end_ts, prompt_count, md_path in rows:
+            proj = _short_project(project)
+            date_str = ts_to_short(start_ts)
+            lines.append(f"{md_path}\t{date_str}  {prompt_count:2d}p  {proj:16s}  {name}")
         if not lines:
-            print("No prompts found.")
+            print("No conversations found.")
             return
-
-        fzf_cmd = [
-            "fzf",
-            "--ansi",
-            "--delimiter=\t",
-            "--with-nth=2",
-            "--preview",
-            _fzf_preview_script(vault_dir),
-            "--preview-window=right:50%:wrap",
-            "--header=Recent prompts · ↑↓ navigate · enter open · esc quit",
-            "--prompt=recent> ",
-            "--no-sort",
-            "--height=90%",
-            "--layout=reverse",
-            "--border=rounded",
-            "--color=header:italic:dim,prompt:cyan,pointer:cyan,marker:green",
-        ]
-
-        result = subprocess.run(fzf_cmd, input="\n".join(lines), capture_output=True, text=True)
-        if result.returncode == 0 and result.stdout.strip():
-            md_path = result.stdout.strip().split("\t")[0]
-            full_path = vault_dir / md_path
-            if full_path.exists():
-                editor = os.environ.get("EDITOR", "less")
-                subprocess.run([editor, str(full_path)])
+        _run_fzf(
+            lines,
+            vault_dir,
+            header="Recent conversations · ↑↓ navigate · enter open",
+            prompt="recent> ",
+        )
     else:
         rows = conn.execute(
             """
@@ -286,7 +324,7 @@ def cmd_recent(args: argparse.Namespace, db_path: Path):
 
         print(f"\n{BOLD}Last {len(rows)} prompts:{RESET}\n")
         for prompt_text, ts, project, conv_name, md_path in rows:
-            project_short = Path(project).name if project else "~"
+            project_short = _short_project(project)
             print(f"  {CYAN}{ts_to_str(ts)}{RESET}  {BOLD}{truncate(prompt_text)}{RESET}")
             print(f"  {DIM}{conv_name} | {project_short} | {md_path}{RESET}")
             print()
@@ -333,43 +371,17 @@ def cmd_list(args: argparse.Namespace, db_path: Path):
 
     if not no_fzf and sys.stdout.isatty() and has_fzf():
         lines = []
-        for _sid, name, project, start_ts, end_ts, prompt_count, md_path in rows:
-            project_short = Path(project).name if project else "~"
+        for _sid, name, project, start_ts, _end_ts, prompt_count, md_path in rows:
+            proj = _short_project(project)
             date_str = ts_to_short(start_ts)
-            end_time = datetime.fromtimestamp(end_ts / 1000, tz=timezone.utc).strftime("%H:%M")
-            line = (
-                f"{md_path}\t{date_str}-{end_time}  {prompt_count:3d}p  {project_short:24s}  {name}"
-            )
-            lines.append(line)
-
-        fzf_cmd = [
-            "fzf",
-            "--ansi",
-            "--delimiter=\t",
-            "--with-nth=2",
-            "--preview",
-            _fzf_preview_script(vault_dir),
-            "--preview-window=right:50%:wrap",
-            "--header=Conversations · ↑↓ navigate · enter open · esc quit",
-            "--prompt=list> ",
-            "--no-sort",
-            "--height=90%",
-            "--layout=reverse",
-            "--border=rounded",
-            "--color=header:italic:dim,prompt:cyan,pointer:cyan,marker:green",
-        ]
-
-        result = subprocess.run(fzf_cmd, input="\n".join(lines), capture_output=True, text=True)
-        if result.returncode == 0 and result.stdout.strip():
-            md_path = result.stdout.strip().split("\t")[0]
-            full_path = vault_dir / md_path
-            if full_path.exists():
-                editor = os.environ.get("EDITOR", "less")
-                subprocess.run([editor, str(full_path)])
+            lines.append(f"{md_path}\t{date_str}  {prompt_count:2d}p  {proj:16s}  {name}")
+        _run_fzf(
+            lines, vault_dir, header="Conversations · ↑↓ navigate · enter open", prompt="list> "
+        )
     else:
         print(f"\n{BOLD}{len(rows)} conversation(s):{RESET}\n")
         for _sid, name, project, start_ts, end_ts, prompt_count, md_path in rows:
-            project_short = Path(project).name if project else "~"
+            project_short = _short_project(project)
             start = ts_to_str(start_ts)
             end_time = datetime.fromtimestamp(end_ts / 1000, tz=timezone.utc).strftime("%H:%M")
             print(
@@ -414,7 +426,7 @@ def cmd_stats(args: argparse.Namespace, db_path: Path):
     if top_projects:
         print(f"\n  {BOLD}Top projects:{RESET}")
         for project, cnt in top_projects:
-            project_short = Path(project).name if project else "~"
+            project_short = _short_project(project)
             bar = YELLOW + "█" * min(cnt, 40) + RESET
             print(f"    {project_short:30s} {bar} {cnt}")
 

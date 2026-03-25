@@ -191,7 +191,7 @@ INSERT INTO prompts_fts(prompts_fts) VALUES('rebuild');
 
 ```bash
 # Full-text search
-prompt-search "shipping scheduler"
+prompt-search "database migration"
 
 # Recent prompts
 prompt-search --recent 10

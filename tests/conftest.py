@@ -35,7 +35,7 @@ def tmp_history(tmp_path: Path) -> Path:
             "sessionId": "aaaa-1111-2222-3333",
         },
         {
-            "display": "fix the shipping scheduler bug in the API endpoint",
+            "display": "fix the authentication bug in the API endpoint",
             "pastedContents": {},
             "timestamp": 1700100000000,
             "project": "/Users/test/project-b",

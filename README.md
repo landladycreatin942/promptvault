@@ -70,8 +70,20 @@ The sync is **idempotent** — it always rebuilds from `history.jsonl`, so it's 
 
 ### Prerequisites
 
-- Python 3.10+
-- [fzf](https://github.com/junegunn/fzf) — for interactive search (`brew install fzf`)
+- **Python 3.10+**
+- **[fzf](https://github.com/junegunn/fzf)** — for interactive search (optional, falls back to plain text)
+
+#### Install fzf
+
+| Platform | Command |
+|----------|---------|
+| **macOS** | `brew install fzf` |
+| **Linux (apt)** | `sudo apt install fzf` |
+| **Linux (dnf)** | `sudo dnf install fzf` |
+| **Windows (WSL)** | `sudo apt install fzf` |
+| **Windows (scoop)** | `scoop install fzf` |
+| **Windows (choco)** | `choco install fzf` |
+| **Windows (winget)** | `winget install junegunn.fzf` |
 
 ### Install
 
@@ -80,6 +92,8 @@ git clone https://github.com/reidemeister94/promptvault.git
 cd promptvault
 pip install -e .
 ```
+
+> **Windows (without WSL):** use `pip install -e .` from PowerShell or Command Prompt. If `python` is not on your PATH, install it from [python.org](https://www.python.org/downloads/) or via `winget install Python.Python.3.12`.
 
 ### Sync your history
 
@@ -96,6 +110,8 @@ Building SQLite database...
 Done! Vault: ~/.claude/prompt-library/vault
 Database: ~/.claude/prompt-library/prompts.db
 ```
+
+> **Windows note:** `~` resolves to `%USERPROFILE%` (e.g. `C:\Users\YourName`). Claude Code stores history in `%USERPROFILE%\.claude\history.jsonl` and promptvault outputs to `%USERPROFILE%\.claude\prompt-library\`.
 
 ### Search
 
@@ -126,8 +142,8 @@ Launch the interactive conversation browser. No arguments needed — browse all 
 Full-text search using SQLite FTS5. Finds conversations containing the query, ranked by relevance.
 
 ```bash
-promptvault search "shipping scheduler"
 promptvault search "database migration"
+promptvault search "auth middleware"
 promptvault search "pytest fixtures" --no-fzf   # plain text output
 ```
 
@@ -185,7 +201,7 @@ tags:
   - promptvault
 ---
 
-# Refactor the shipping scheduler API endpoint
+# Refactor the user authentication API endpoint
 
 **Project:** `my-project`
 **Duration:** 2026-03-25 18:51 - 19:20 (28 min)
@@ -195,7 +211,7 @@ tags:
 
 ## Prompt 1 — 18:51:48
 
-refactor the shipping scheduler API to use the new service layer...
+refactor the user authentication API to use the new service layer...
 
 ## Prompt 2 — 18:55:12
 
@@ -214,7 +230,7 @@ can you add proper error handling for the database connection?
 │   ├── 02/
 │   │   └── ...
 │   └── 03/
-│       ├── 2026-03-25__c792e74f__refactor-shipping-scheduler.md
+│       ├── 2026-03-25__c792e74f__refactor-user-auth.md
 │       └── ...
 ```
 
@@ -230,6 +246,8 @@ A Claude Code hook captures every prompt the moment you send it — no sync need
 
 Add a `UserPromptSubmit` hook to `~/.claude/hooks.json`:
 
+**macOS / Linux / WSL:**
+
 ```json
 {
   "hooks": {
@@ -237,6 +255,22 @@ Add a `UserPromptSubmit` hook to `~/.claude/hooks.json`:
       "hooks": [{
         "type": "command",
         "command": "python3 /path/to/promptvault/promptvault/hook.py",
+        "timeout": 5000
+      }]
+    }]
+  }
+}
+```
+
+**Windows (without WSL):**
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{
+      "hooks": [{
+        "type": "command",
+        "command": "python C:\\path\\to\\promptvault\\promptvault\\hook.py",
         "timeout": 5000
       }]
     }]
@@ -299,6 +333,8 @@ promptvault/
 | `PROMPTVAULT_VAULT` | `~/.claude/prompt-library/vault` | Markdown vault directory |
 | `PROMPTVAULT_CAPTURE_LOG` | `~/.claude/prompt-library/capture.jsonl` | Real-time capture log |
 
+> On Windows (without WSL), `~` maps to `%USERPROFILE%`. You can override paths using these environment variables if your Claude Code config lives elsewhere.
+
 ---
 
 ## Development
@@ -313,6 +349,8 @@ make test            # Run tests
 make lint            # Lint with ruff
 make format          # Format with ruff
 ```
+
+> **Windows (without WSL):** `make` is not available by default. Run the commands directly: `pip install -e ".[dev]"`, `pytest`, `ruff check .`, `ruff format .`.
 
 36 tests covering sync, search, and hook functionality. All tests use synthetic data — no dependency on real `history.jsonl`.
 

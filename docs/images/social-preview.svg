@@ -30,7 +30,7 @@
     <circle cx="36" cy="15" r="5" fill="#eab308"/>
     <circle cx="52" cy="15" r="5" fill="#22c55e"/>
     <text x="16" y="48" font-family="monospace" font-size="14" fill="#22c55e">$</text>
-    <text x="30" y="48" font-family="monospace" font-size="14" fill="#e2e8f0">promptvault search "shipping scheduler"</text>
+    <text x="30" y="48" font-family="monospace" font-size="14" fill="#e2e8f0">promptvault search "database migration"</text>
     <text x="16" y="72" font-family="monospace" font-size="13" fill="#64748b">Found 20 results across 12 conversations</text>
   </g>
 </svg>

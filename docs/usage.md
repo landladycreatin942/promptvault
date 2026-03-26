@@ -66,6 +66,7 @@ Rebuild the vault and database from `~/.claude/history.jsonl`. Runs automaticall
 | Key | Action |
 |-----|--------|
 | `Up/Down` | Navigate conversations |
+| `Shift-Up/Down` | Scroll preview |
 | `Enter` | Open in `$EDITOR` (returns to fzf after) |
 | `Tab/Shift-Tab` | Multi-select conversations |
 | `Esc` | Quit |
@@ -112,10 +113,12 @@ Type to search in real-time. The search uses SQLite FTS5 with BM25 ranking for r
 
 ### Preview
 
-The right pane shows a live preview of the selected conversation with:
+The bottom pane shows a live preview of the selected conversation with:
 - Pinned header: conversation title, project, duration, prompt count
 - Prompt content with query highlighting in yellow
-- Toggle with `Ctrl-/`
+- `Ctrl-/` toggles the preview pane
+- `Shift-Up/Down` scrolls the preview content
+- Mouse text selection works directly in the preview (mouse is disabled for fzf navigation)
 
 ---
 

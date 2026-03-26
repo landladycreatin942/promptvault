@@ -94,8 +94,8 @@ All commands launch **fzf** by default (split pane: conversation list + live pre
 | `Ctrl-T` | Toggle conversation / prompt view |
 | `Ctrl-P` | Cycle project filter |
 | `Ctrl-D` | Cycle date range (all/today/week/month) |
-| `Ctrl-Y` | Copy to clipboard (view-aware) |
-| `Ctrl-E` | Export to file (view-aware) |
+| `Ctrl-Y` | Copy to clipboard |
+| `Ctrl-E` | Export to file (save dialog) |
 | `Ctrl-/` | Toggle preview |
 | `Tab` | Multi-select |
 | `Esc` | Quit |
@@ -162,7 +162,7 @@ Open as an Obsidian vault. The Calendar plugin works well for browsing.
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md). 296 tests, all synthetic data.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md). 293 tests, all synthetic data.
 
 ```bash
 git clone https://github.com/reidemeister94/promptvault.git

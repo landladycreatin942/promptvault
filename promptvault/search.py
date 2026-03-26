@@ -534,10 +534,11 @@ def _run_fzf(
         "--multi",
         "--preview",
         _fzf_preview_script(vault_dir),
-        "--preview-window=right:50%:wrap:~3",  # ~3 pins metadata header lines
+        "--preview-window=down:60%:wrap:~3",  # down = full-width for text selection
         f"--header={header}",
         f"--prompt={prompt}",
         "--no-sort",  # keep our ordering (by date)
+        "--no-mouse",  # disable fzf mouse to allow text selection in preview
         "--height=90%",
         "--layout=reverse",
         "--border=rounded",
@@ -570,6 +571,8 @@ def _run_fzf(
         [
             "--bind",
             "ctrl-/:toggle-preview",
+            "--bind",
+            "shift-up:preview-up,shift-down:preview-down",
             # enter opens editor via execute() and returns to fzf afterward
             "--bind",
             f"enter:execute({os.environ.get('EDITOR', 'less')} {vault_dir}/{{1}})",
@@ -588,11 +591,12 @@ def _run_fzf(
         footer_line1 = (
             "enter open | ctrl-y copy | ctrl-e export | ctrl-/ preview | tab select | esc quit"
         )
+        footer_scroll = "shift-up/down scroll preview"
         if db_path and fzf_ver >= (0, 45, 0):
             footer_line2 = "ctrl-t mode | ctrl-p project | ctrl-d date"
-            base_footer = footer_line2 + "\n" + footer_line1
+            base_footer = footer_line2 + "\n" + footer_line1 + "\n" + footer_scroll
         else:
-            base_footer = footer_line1
+            base_footer = footer_line1 + "\n" + footer_scroll
         fzf_cmd.append(f"--footer={base_footer}")
     if os.environ.get("TMUX") and fzf_ver >= (0, 38, 0):
         fzf_cmd.extend(["--tmux", "center,80%,60%"])

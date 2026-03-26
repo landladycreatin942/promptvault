@@ -83,14 +83,12 @@ Rebuild the vault and database from `~/.claude/history.jsonl`. Runs automaticall
 
 ### Copy and Export
 
-Copy (`Ctrl-Y`) and export (`Ctrl-E`) are **view-aware** — their behavior depends on which view you're in:
+| Action | What it does |
+|--------|-------------|
+| `Ctrl-Y` | Copies all prompts from selected conversations to clipboard |
+| `Ctrl-E` | Opens a native save dialog to export selected conversations as markdown |
 
-| View | Ctrl-Y (copy) | Ctrl-E (export) |
-|------|---------------|-----------------|
-| **Conversation view** | Copies all prompts from selected conversations | Exports full conversations to `export.md` |
-| **Prompt view** | Copies only the selected prompt lines | Exports only the selected prompts to `export.md` |
-
-Use `Tab` to multi-select items before copying or exporting. The export file is written to `~/.claude/prompt-library/export.md`.
+Use `Tab` to multi-select conversations before copying or exporting. On macOS, `Ctrl-E` shows a "Save As" dialog and reveals the file in Finder. On Linux, it uses zenity if available, otherwise saves to `~/Desktop/promptvault-export.md`.
 
 ### Search
 

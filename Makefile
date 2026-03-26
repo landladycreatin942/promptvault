@@ -1,4 +1,4 @@
-.PHONY: clean tree commitizen install-dev setup-dev-env install test lint format test-html-cov-report sync fetch-tags changelog bump bump-version-minor bump-version-major bump-version-patch push-tag
+.PHONY: clean tree commitizen install-dev setup-dev-env install install-pipx install-release test lint format test-html-cov-report sync fetch-tags changelog bump bump-version-minor bump-version-major bump-version-patch push-tag
 
 FILE=VERSION
 VERSION=v$(shell cat $(FILE))
@@ -31,7 +31,13 @@ setup-dev-env: install-dev commitizen
 	pre-commit install --hook-type pre-commit --hook-type commit-msg
 
 install:
-	pip install -e .
+	uv tool install --editable .
+
+install-pipx:
+	pipx install --editable .
+
+install-release:
+	uv tool install promptvault-py
 
 test:
 	pytest

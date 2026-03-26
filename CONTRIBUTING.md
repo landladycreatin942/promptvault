@@ -7,10 +7,13 @@ Thanks for your interest in contributing! Here's how to get started.
 ```bash
 git clone https://github.com/reidemeister94/promptvault.git
 cd promptvault
-pip install -e .
-pip install -r requirements-dev.txt
-make setup-dev-env  # installs pre-commit hooks
+uv tool install --editable .   # global "pv" pointing to your local source
+make setup-dev-env              # installs dev deps + pre-commit hooks
 ```
+
+> **Why `uv tool install`?** It creates an isolated virtualenv and symlinks `pv` / `pv-sync` to `~/.local/bin/`, so the commands work in any terminal without activating an environment. The `--editable` flag means code changes are reflected immediately.
+>
+> **Alternative:** `pipx install --editable .` does the same thing.
 
 ## Development workflow
 

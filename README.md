@@ -32,19 +32,22 @@ Claude Code stores conversations in `~/.claude/history.jsonl` — not searchable
 ## Quick Start
 
 ```bash
-pip install promptvault-py
+# recommended — fast, isolated, always on PATH
+uv tool install promptvault-py
+
+# alternative — same idea, traditional tool
+pipx install promptvault-py
 
 pv-sync                        # sync your Claude Code history
 pv                             # browse conversations
 pv search "database migration" # full-text search
 ```
 
-Or install from source:
+> Don't have uv? `curl -LsSf https://astral.sh/uv/install.sh | sh` ([docs](https://docs.astral.sh/uv/getting-started/installation/))
+>
+> Don't have pipx? `brew install pipx` or `pip install --user pipx` ([docs](https://pipx.pypa.io/stable/installation/))
 
-```bash
-git clone https://github.com/reidemeister94/promptvault.git
-cd promptvault && pip install -e .
-```
+Both tools install `pv` into an **isolated virtualenv** and symlink the executable to `~/.local/bin/`, so it's available globally — no environment activation needed.
 
 > `pv` is the short alias. `promptvault` / `promptvault-sync` also work.
 
@@ -145,7 +148,10 @@ Open as an Obsidian vault. The Calendar plugin works well for browsing.
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md). 187 tests, all synthetic data.
 
 ```bash
-pip install -e . && make setup-dev-env
+git clone https://github.com/reidemeister94/promptvault.git
+cd promptvault
+uv tool install --editable .   # global "pv" that tracks your local source
+make setup-dev-env
 make test && make lint
 ```
 

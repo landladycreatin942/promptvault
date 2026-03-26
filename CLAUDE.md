@@ -5,7 +5,7 @@
 | **Language** | Python 3.10+, zero runtime deps |
 | **Entry points** | `promptvault` → `search:main`, `promptvault-sync` → `sync:main` |
 | **Source** | `promptvault/sync.py`, `promptvault/search.py`, `promptvault/hook.py` |
-| **Tests** | `tests/` — 293 tests, pytest, synthetic data only |
+| **Tests** | `tests/` — 341 tests, pytest, synthetic data only |
 | **Lint/Format** | ruff (line-length=100) |
 | **Python env** | `/opt/anaconda3/envs/promptvault` |
 
@@ -15,6 +15,38 @@
 conversations(session_id PK, name, display_name, project, start_ts, end_ts, prompt_count, md_path)
 prompts(id PK, session_id FK, prompt_text, timestamp, project, seq)
 prompts_fts USING fts5(prompt_text, content=prompts)  -- BM25 ranking
+```
+
+### Tags Schema (tags.db — separate, survives sync rebuilds)
+
+```
+tags(session_id TEXT, tag TEXT, created_ts INTEGER, PRIMARY KEY(session_id, tag))
+```
+
+### fzf Keybindings
+
+| Key | Action | fzf min |
+|-----|--------|---------|
+| enter | Open in editor (returns to fzf) | any |
+| ctrl-o | Open in editor (exits fzf) | 0.38 |
+| ctrl-y | Copy to clipboard | any |
+| ctrl-e | Export to file | any |
+| ctrl-x | Exclude from results | 0.60 |
+| ctrl-/ | Toggle preview | any |
+| ctrl-t | Toggle conv/prompt mode | 0.45 |
+| ctrl-p | Cycle project filter | 0.45 |
+| ctrl-d | Cycle date filter | 0.45 |
+| ctrl-b | Toggle bookmark | 0.45 |
+| ctrl-g | Toggle bookmark filter | 0.45 |
+| alt-r | Toggle raw mode | 0.66 |
+| tab | Multi-select | any |
+
+### Shell Widget
+
+```bash
+# zsh: eval "$(pv shell-init zsh)"
+# bash: eval "$(pv shell-init bash)"
+# Keybinding: Alt-P (configurable via PROMPTVAULT_WIDGET_KEY)
 ```
 
 ### Key Env Vars
@@ -37,6 +69,21 @@ prompts_fts USING fts5(prompt_text, content=prompts)  -- BM25 ranking
 - `conftest.py`: `tmp_history`, `tmp_output` fixtures (synthetic history.jsonl)
 - `test_e2e.py`: `e2e_env` fixture (11 sessions, full vault+DB, covers all edge cases)
 - All tests use synthetic data — never touch real `~/.claude/`
+
+### Visual Testing (MANDATORY after UI changes)
+
+```bash
+# Default view
+/opt/anaconda3/envs/promptvault/bin/python tests/visual_test.py --wait 3000
+
+# Test keybinding (e.g., ctrl-t mode toggle)
+/opt/anaconda3/envs/promptvault/bin/python tests/visual_test.py --wait 3000 --keys ctrl-t
+
+# Test at narrow terminal (80 cols) — footer must NOT truncate
+/opt/anaconda3/envs/promptvault/bin/python tests/visual_test.py --wait 3000 --cols 80
+```
+
+**Rule:** After any change to fzf UI, keybindings, footer, or display format — run visual tests at 80 and 140 cols. Verify footer is fully visible, keybindings produce expected state changes, and layout is clean.
 
 ---
 

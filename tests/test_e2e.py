@@ -389,7 +389,7 @@ class TestConversationLinesE2E:
         lines = _build_conversation_lines(conn)
         for line in lines:
             parts = line.split("\t")
-            assert len(parts) == 2
+            assert len(parts) == 3  # md_path, visible, session_id
             assert parts[0].endswith(".md")
 
     def test_query_filters_conversations(self, e2e_env):

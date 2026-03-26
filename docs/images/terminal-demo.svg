@@ -1,229 +1,144 @@
-<svg class="rich-terminal" viewBox="0 0 1287 1026.0" xmlns="http://www.w3.org/2000/svg">
-    <!-- Generated with Rich https://www.textualize.io -->
-    <style>
-
-    @font-face {
-        font-family: "Fira Code";
-        src: local("FiraCode-Regular"),
-                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Regular.woff2") format("woff2"),
-                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Regular.woff") format("woff");
-        font-style: normal;
-        font-weight: 400;
-    }
-    @font-face {
-        font-family: "Fira Code";
-        src: local("FiraCode-Bold"),
-                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Bold.woff2") format("woff2"),
-                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Bold.woff") format("woff");
-        font-style: bold;
-        font-weight: 700;
-    }
-
-    .terminal-2560423092-matrix {
-        font-family: Fira Code, monospace;
-        font-size: 20px;
-        line-height: 24.4px;
-        font-variant-east-asian: full-width;
-    }
-
-    .terminal-2560423092-title {
-        font-size: 18px;
-        font-weight: bold;
-        font-family: arial;
-    }
-
-    .terminal-2560423092-r1 { fill: #868887 }
-.terminal-2560423092-r2 { fill: #6b546f }
-.terminal-2560423092-r3 { fill: #a92a59 }
-.terminal-2560423092-r4 { fill: #c5c8c6 }
-.terminal-2560423092-r5 { fill: #608ab1 }
-.terminal-2560423092-r6 { fill: #68a0b3;font-weight: bold }
-.terminal-2560423092-r7 { fill: #8d7b39 }
-.terminal-2560423092-r8 { fill: #4e707b;font-weight: bold }
-.terminal-2560423092-r9 { fill: #868887;font-weight: bold }
-.terminal-2560423092-r10 { fill: #4e707b;font-weight: bold;font-style: italic; }
-.terminal-2560423092-r11 { fill: #868887;font-style: italic; }
-.terminal-2560423092-r12 { fill: #c5c8c6;font-weight: bold }
-.terminal-2560423092-r13 { fill: #105e35;font-weight: bold }
-.terminal-2560423092-r14 { fill: #98a84b }
-.terminal-2560423092-r15 { fill: #d0b344 }
-.terminal-2560423092-r16 { fill: #d0b344;font-weight: bold }
-    </style>
-
-    <defs>
-    <clipPath id="terminal-2560423092-clip-terminal">
-      <rect x="0" y="0" width="1267.8" height="975.0" />
+<svg viewBox="0 0 960 780" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono','Fira Code','Cascadia Code',Menlo,Monaco,monospace" font-size="13">
+  <defs>
+    <linearGradient id="titlebar-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a3c"/>
+      <stop offset="100%" stop-color="#2c2c2e"/>
+    </linearGradient>
+    <clipPath id="terminal-clip">
+      <rect x="0" y="0" width="960" height="780" rx="10"/>
     </clipPath>
-    <clipPath id="terminal-2560423092-line-0">
-    <rect x="0" y="1.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-1">
-    <rect x="0" y="25.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-2">
-    <rect x="0" y="50.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-3">
-    <rect x="0" y="74.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-4">
-    <rect x="0" y="99.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-5">
-    <rect x="0" y="123.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-6">
-    <rect x="0" y="147.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-7">
-    <rect x="0" y="172.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-8">
-    <rect x="0" y="196.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-9">
-    <rect x="0" y="221.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-10">
-    <rect x="0" y="245.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-11">
-    <rect x="0" y="269.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-12">
-    <rect x="0" y="294.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-13">
-    <rect x="0" y="318.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-14">
-    <rect x="0" y="343.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-15">
-    <rect x="0" y="367.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-16">
-    <rect x="0" y="391.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-17">
-    <rect x="0" y="416.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-18">
-    <rect x="0" y="440.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-19">
-    <rect x="0" y="465.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-20">
-    <rect x="0" y="489.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-21">
-    <rect x="0" y="513.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-22">
-    <rect x="0" y="538.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-23">
-    <rect x="0" y="562.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-24">
-    <rect x="0" y="587.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-25">
-    <rect x="0" y="611.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-26">
-    <rect x="0" y="635.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-27">
-    <rect x="0" y="660.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-28">
-    <rect x="0" y="684.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-29">
-    <rect x="0" y="709.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-30">
-    <rect x="0" y="733.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-31">
-    <rect x="0" y="757.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-32">
-    <rect x="0" y="782.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-33">
-    <rect x="0" y="806.7" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-34">
-    <rect x="0" y="831.1" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-35">
-    <rect x="0" y="855.5" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-36">
-    <rect x="0" y="879.9" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-37">
-    <rect x="0" y="904.3" width="1268.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2560423092-line-38">
-    <rect x="0" y="928.7" width="1268.8" height="24.65"/>
-            </clipPath>
-    </defs>
+  </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1285" height="1024" rx="8"/><text class="terminal-2560423092-title" fill="#c5c8c6" text-anchor="middle" x="642" y="27">promptvault</text>
-            <g transform="translate(26,22)">
-            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
-            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
-            <circle cx="44" cy="0" r="7" fill="#28c840"/>
-            </g>
+  <!-- Window frame -->
+  <rect width="960" height="780" rx="10" fill="#1e1e1e"/>
 
-    <g transform="translate(9, 41)" clip-path="url(#terminal-2560423092-clip-terminal)">
-    <rect fill="#005f87" x="36.6" y="147.9" width="24.4" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="61" y="147.9" width="24.4" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="85.4" y="147.9" width="12.2" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="97.6" y="147.9" width="24.4" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="122" y="147.9" width="12.2" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="134.2" y="147.9" width="61" height="24.65" shape-rendering="crispEdges"/><rect fill="#005f87" x="195.2" y="147.9" width="1061.4" height="24.65" shape-rendering="crispEdges"/>
-    <g class="terminal-2560423092-matrix">
-    <text class="terminal-2560423092-r1" x="0" y="20" textLength="12.2" clip-path="url(#terminal-2560423092-line-0)">~</text><text class="terminal-2560423092-r2" x="12.2" y="20" textLength="122" clip-path="url(#terminal-2560423092-line-0)">/projects/</text><text class="terminal-2560423092-r3" x="134.2" y="20" textLength="61" clip-path="url(#terminal-2560423092-line-0)">myapp</text><text class="terminal-2560423092-r5" x="207.4" y="20" textLength="48.8" clip-path="url(#terminal-2560423092-line-0)">main</text><text class="terminal-2560423092-r1" x="268.4" y="20" textLength="12.2" clip-path="url(#terminal-2560423092-line-0)">❯</text><text class="terminal-2560423092-r6" x="292.8" y="20" textLength="24.4" clip-path="url(#terminal-2560423092-line-0)">pv</text><text class="terminal-2560423092-r4" x="1268.8" y="20" textLength="12.2" clip-path="url(#terminal-2560423092-line-0)">
-</text><text class="terminal-2560423092-r1" x="0" y="44.4" textLength="85.4" clip-path="url(#terminal-2560423092-line-1)">Syncing</text><text class="terminal-2560423092-r7" x="85.4" y="44.4" textLength="36.6" clip-path="url(#terminal-2560423092-line-1)">...</text><text class="terminal-2560423092-r1" x="122" y="44.4" textLength="73.2" clip-path="url(#terminal-2560423092-line-1)">&#160;done.</text><text class="terminal-2560423092-r4" x="1268.8" y="44.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-1)">
-</text><text class="terminal-2560423092-r4" x="0" y="68.8" textLength="1244.4" clip-path="url(#terminal-2560423092-line-2)">&#160;&#160;╭──────────────────────────────────────────────────────────────────────────────────────────────────╮</text><text class="terminal-2560423092-r4" x="1268.8" y="68.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-2)">
-</text><text class="terminal-2560423092-r4" x="0" y="93.2" textLength="48.8" clip-path="url(#terminal-2560423092-line-3)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r6" x="48.8" y="93.2" textLength="61" clip-path="url(#terminal-2560423092-line-3)">conv&gt;</text><text class="terminal-2560423092-r4" x="122" y="93.2" textLength="207.4" clip-path="url(#terminal-2560423092-line-3)">docker&#160;networking</text><text class="terminal-2560423092-r4" x="329.4" y="93.2" textLength="927.2" clip-path="url(#terminal-2560423092-line-3)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="93.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-3)">
-</text><text class="terminal-2560423092-r4" x="0" y="117.6" textLength="73.2" clip-path="url(#terminal-2560423092-line-4)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">8</text><text class="terminal-2560423092-r1" x="85.4" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">/</text><text class="terminal-2560423092-r8" x="97.6" y="117.6" textLength="36.6" clip-path="url(#terminal-2560423092-line-4)">156</text><text class="terminal-2560423092-r9" x="146.4" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">(</text><text class="terminal-2560423092-r8" x="158.6" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">0</text><text class="terminal-2560423092-r9" x="170.8" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">)</text><text class="terminal-2560423092-r4" x="1220" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="117.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-4)">
-</text><text class="terminal-2560423092-r4" x="0" y="142" textLength="73.2" clip-path="url(#terminal-2560423092-line-5)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r10" x="73.2" y="142" textLength="36.6" clip-path="url(#terminal-2560423092-line-5)">156</text><text class="terminal-2560423092-r11" x="109.8" y="142" textLength="1122.4" clip-path="url(#terminal-2560423092-line-5)">&#160;conversations&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="1232.2" y="142" textLength="12.2" clip-path="url(#terminal-2560423092-line-5)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="142" textLength="12.2" clip-path="url(#terminal-2560423092-line-5)">
-</text><text class="terminal-2560423092-r4" x="0" y="166.4" textLength="36.6" clip-path="url(#terminal-2560423092-line-6)">&#160;&#160;│</text><text class="terminal-2560423092-r12" x="61" y="166.4" textLength="24.4" clip-path="url(#terminal-2560423092-line-6)">03</text><text class="terminal-2560423092-r12" x="85.4" y="166.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-6)">-</text><text class="terminal-2560423092-r12" x="97.6" y="166.4" textLength="24.4" clip-path="url(#terminal-2560423092-line-6)">25</text><text class="terminal-2560423092-r12" x="134.2" y="166.4" textLength="61" clip-path="url(#terminal-2560423092-line-6)">14:30</text><text class="terminal-2560423092-r12" x="195.2" y="166.4" textLength="1061.4" clip-path="url(#terminal-2560423092-line-6)">&#160;&#160;&#160;8p&#160;&#160;my-webapp&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Set&#160;up&#160;docker&#160;networking&#160;for&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="1256.6" y="166.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-6)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="166.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-6)">
-</text><text class="terminal-2560423092-r4" x="0" y="190.8" textLength="73.2" clip-path="url(#terminal-2560423092-line-7)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="190.8" textLength="24.4" clip-path="url(#terminal-2560423092-line-7)">03</text><text class="terminal-2560423092-r1" x="97.6" y="190.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-7)">-</text><text class="terminal-2560423092-r8" x="109.8" y="190.8" textLength="24.4" clip-path="url(#terminal-2560423092-line-7)">25</text><text class="terminal-2560423092-r13" x="146.4" y="190.8" textLength="61" clip-path="url(#terminal-2560423092-line-7)">10:15</text><text class="terminal-2560423092-r4" x="207.4" y="190.8" textLength="85.4" clip-path="url(#terminal-2560423092-line-7)">&#160;&#160;&#160;3p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="190.8" textLength="219.6" clip-path="url(#terminal-2560423092-line-7)">my-webapp&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="190.8" textLength="732" clip-path="url(#terminal-2560423092-line-7)">&#160;&#160;Debug&#160;docker&#160;compose&#160;ports&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="190.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-7)">
-</text><text class="terminal-2560423092-r4" x="0" y="215.2" textLength="73.2" clip-path="url(#terminal-2560423092-line-8)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="215.2" textLength="24.4" clip-path="url(#terminal-2560423092-line-8)">03</text><text class="terminal-2560423092-r1" x="97.6" y="215.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-8)">-</text><text class="terminal-2560423092-r8" x="109.8" y="215.2" textLength="24.4" clip-path="url(#terminal-2560423092-line-8)">24</text><text class="terminal-2560423092-r13" x="146.4" y="215.2" textLength="61" clip-path="url(#terminal-2560423092-line-8)">22:40</text><text class="terminal-2560423092-r4" x="207.4" y="215.2" textLength="85.4" clip-path="url(#terminal-2560423092-line-8)">&#160;&#160;12p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="215.2" textLength="219.6" clip-path="url(#terminal-2560423092-line-8)">infra&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="215.2" textLength="732" clip-path="url(#terminal-2560423092-line-8)">&#160;&#160;Migrate&#160;to&#160;docker&#160;swarm&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="215.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-8)">
-</text><text class="terminal-2560423092-r4" x="0" y="239.6" textLength="73.2" clip-path="url(#terminal-2560423092-line-9)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="239.6" textLength="24.4" clip-path="url(#terminal-2560423092-line-9)">03</text><text class="terminal-2560423092-r1" x="97.6" y="239.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-9)">-</text><text class="terminal-2560423092-r8" x="109.8" y="239.6" textLength="24.4" clip-path="url(#terminal-2560423092-line-9)">24</text><text class="terminal-2560423092-r13" x="146.4" y="239.6" textLength="61" clip-path="url(#terminal-2560423092-line-9)">16:05</text><text class="terminal-2560423092-r4" x="207.4" y="239.6" textLength="85.4" clip-path="url(#terminal-2560423092-line-9)">&#160;&#160;&#160;5p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="239.6" textLength="219.6" clip-path="url(#terminal-2560423092-line-9)">my-webapp&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="239.6" textLength="732" clip-path="url(#terminal-2560423092-line-9)">&#160;&#160;Docker&#160;healthcheck&#160;not&#160;working&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="239.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-9)">
-</text><text class="terminal-2560423092-r4" x="0" y="264" textLength="73.2" clip-path="url(#terminal-2560423092-line-10)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="264" textLength="24.4" clip-path="url(#terminal-2560423092-line-10)">03</text><text class="terminal-2560423092-r1" x="97.6" y="264" textLength="12.2" clip-path="url(#terminal-2560423092-line-10)">-</text><text class="terminal-2560423092-r8" x="109.8" y="264" textLength="24.4" clip-path="url(#terminal-2560423092-line-10)">23</text><text class="terminal-2560423092-r13" x="146.4" y="264" textLength="61" clip-path="url(#terminal-2560423092-line-10)">11:20</text><text class="terminal-2560423092-r4" x="207.4" y="264" textLength="85.4" clip-path="url(#terminal-2560423092-line-10)">&#160;&#160;&#160;2p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="264" textLength="219.6" clip-path="url(#terminal-2560423092-line-10)">~&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="264" textLength="732" clip-path="url(#terminal-2560423092-line-10)">&#160;&#160;How&#160;does&#160;docker&#160;networking&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="264" textLength="12.2" clip-path="url(#terminal-2560423092-line-10)">
-</text><text class="terminal-2560423092-r4" x="0" y="288.4" textLength="73.2" clip-path="url(#terminal-2560423092-line-11)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="288.4" textLength="24.4" clip-path="url(#terminal-2560423092-line-11)">03</text><text class="terminal-2560423092-r1" x="97.6" y="288.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-11)">-</text><text class="terminal-2560423092-r8" x="109.8" y="288.4" textLength="24.4" clip-path="url(#terminal-2560423092-line-11)">22</text><text class="terminal-2560423092-r13" x="146.4" y="288.4" textLength="61" clip-path="url(#terminal-2560423092-line-11)">09:45</text><text class="terminal-2560423092-r4" x="207.4" y="288.4" textLength="85.4" clip-path="url(#terminal-2560423092-line-11)">&#160;&#160;&#160;7p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="288.4" textLength="219.6" clip-path="url(#terminal-2560423092-line-11)">backend-api&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="288.4" textLength="732" clip-path="url(#terminal-2560423092-line-11)">&#160;&#160;Add&#160;docker&#160;support&#160;to&#160;CI&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="288.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-11)">
-</text><text class="terminal-2560423092-r4" x="0" y="312.8" textLength="73.2" clip-path="url(#terminal-2560423092-line-12)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="312.8" textLength="24.4" clip-path="url(#terminal-2560423092-line-12)">03</text><text class="terminal-2560423092-r1" x="97.6" y="312.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-12)">-</text><text class="terminal-2560423092-r8" x="109.8" y="312.8" textLength="24.4" clip-path="url(#terminal-2560423092-line-12)">21</text><text class="terminal-2560423092-r13" x="146.4" y="312.8" textLength="61" clip-path="url(#terminal-2560423092-line-12)">17:30</text><text class="terminal-2560423092-r4" x="207.4" y="312.8" textLength="85.4" clip-path="url(#terminal-2560423092-line-12)">&#160;&#160;&#160;4p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="312.8" textLength="219.6" clip-path="url(#terminal-2560423092-line-12)">infra&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="312.8" textLength="732" clip-path="url(#terminal-2560423092-line-12)">&#160;&#160;Docker&#160;registry&#160;auth&#160;setup&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="312.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-12)">
-</text><text class="terminal-2560423092-r4" x="0" y="337.2" textLength="73.2" clip-path="url(#terminal-2560423092-line-13)">&#160;&#160;│&#160;&#160;&#160;</text><text class="terminal-2560423092-r8" x="73.2" y="337.2" textLength="24.4" clip-path="url(#terminal-2560423092-line-13)">03</text><text class="terminal-2560423092-r1" x="97.6" y="337.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-13)">-</text><text class="terminal-2560423092-r8" x="109.8" y="337.2" textLength="24.4" clip-path="url(#terminal-2560423092-line-13)">20</text><text class="terminal-2560423092-r13" x="146.4" y="337.2" textLength="61" clip-path="url(#terminal-2560423092-line-13)">14:10</text><text class="terminal-2560423092-r4" x="207.4" y="337.2" textLength="85.4" clip-path="url(#terminal-2560423092-line-13)">&#160;&#160;15p&#160;&#160;</text><text class="terminal-2560423092-r14" x="292.8" y="337.2" textLength="219.6" clip-path="url(#terminal-2560423092-line-13)">my-webapp&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="512.4" y="337.2" textLength="732" clip-path="url(#terminal-2560423092-line-13)">&#160;&#160;Containerize&#160;the&#160;app&#160;with&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="337.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-13)">
-</text><text class="terminal-2560423092-r4" x="0" y="361.6" textLength="1244.4" clip-path="url(#terminal-2560423092-line-14)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="361.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-14)">
-</text><text class="terminal-2560423092-r4" x="0" y="386" textLength="48.8" clip-path="url(#terminal-2560423092-line-15)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r1" x="48.8" y="386" textLength="1183.4" clip-path="url(#terminal-2560423092-line-15)">ctrl-t&#160;mode&#160;|&#160;ctrl-p&#160;project&#160;|&#160;ctrl-d&#160;date&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="1232.2" y="386" textLength="12.2" clip-path="url(#terminal-2560423092-line-15)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="386" textLength="12.2" clip-path="url(#terminal-2560423092-line-15)">
-</text><text class="terminal-2560423092-r4" x="0" y="410.4" textLength="48.8" clip-path="url(#terminal-2560423092-line-16)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r1" x="48.8" y="410.4" textLength="585.6" clip-path="url(#terminal-2560423092-line-16)">enter&#160;open&#160;|&#160;ctrl-y&#160;copy&#160;|&#160;ctrl-e&#160;export&#160;|&#160;ctrl-</text><text class="terminal-2560423092-r2" x="634.4" y="410.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-16)">/</text><text class="terminal-2560423092-r1" x="646.6" y="410.4" textLength="585.6" clip-path="url(#terminal-2560423092-line-16)">&#160;preview&#160;|&#160;tab&#160;select&#160;|&#160;esc&#160;quit&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="1232.2" y="410.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-16)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="410.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-16)">
-</text><text class="terminal-2560423092-r4" x="0" y="434.8" textLength="48.8" clip-path="url(#terminal-2560423092-line-17)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r1" x="48.8" y="434.8" textLength="1183.4" clip-path="url(#terminal-2560423092-line-17)">shift-up/down&#160;scroll&#160;preview&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2560423092-r4" x="1232.2" y="434.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-17)">│</text><text class="terminal-2560423092-r4" x="1268.8" y="434.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-17)">
-</text><text class="terminal-2560423092-r4" x="0" y="459.2" textLength="1244.4" clip-path="url(#terminal-2560423092-line-18)">&#160;&#160;│──────────────────────────────────────────────────────────────────────────────────────────────────│</text><text class="terminal-2560423092-r4" x="1268.8" y="459.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-18)">
-</text><text class="terminal-2560423092-r4" x="0" y="483.6" textLength="48.8" clip-path="url(#terminal-2560423092-line-19)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r12" x="48.8" y="483.6" textLength="658.8" clip-path="url(#terminal-2560423092-line-19)">#&#160;Set&#160;up&#160;docker&#160;networking&#160;for&#160;the&#160;staging&#160;environment</text><text class="terminal-2560423092-r4" x="1268.8" y="483.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-19)">
-</text><text class="terminal-2560423092-r4" x="0" y="508" textLength="48.8" clip-path="url(#terminal-2560423092-line-20)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r1" x="48.8" y="508" textLength="732" clip-path="url(#terminal-2560423092-line-20)">**Project:**&#160;my-webapp&#160;&#160;**Duration:**&#160;45&#160;min&#160;&#160;**Prompts:**&#160;8</text><text class="terminal-2560423092-r4" x="1268.8" y="508" textLength="12.2" clip-path="url(#terminal-2560423092-line-20)">
-</text><text class="terminal-2560423092-r4" x="0" y="532.4" textLength="85.4" clip-path="url(#terminal-2560423092-line-21)">&#160;&#160;│&#160;---</text><text class="terminal-2560423092-r4" x="1268.8" y="532.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-21)">
-</text><text class="terminal-2560423092-r4" x="0" y="556.8" textLength="1244.4" clip-path="url(#terminal-2560423092-line-22)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="556.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-22)">
-</text><text class="terminal-2560423092-r4" x="0" y="581.2" textLength="48.8" clip-path="url(#terminal-2560423092-line-23)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r15" x="48.8" y="581.2" textLength="268.4" clip-path="url(#terminal-2560423092-line-23)">##&#160;Prompt&#160;1&#160;—&#160;14:30:12</text><text class="terminal-2560423092-r4" x="1268.8" y="581.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-23)">
-</text><text class="terminal-2560423092-r4" x="0" y="605.6" textLength="1244.4" clip-path="url(#terminal-2560423092-line-24)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="605.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-24)">
-</text><text class="terminal-2560423092-r4" x="0" y="630" textLength="256.2" clip-path="url(#terminal-2560423092-line-25)">&#160;&#160;│&#160;I&#160;need&#160;to&#160;set&#160;up&#160;</text><text class="terminal-2560423092-r16" x="256.2" y="630" textLength="207.4" clip-path="url(#terminal-2560423092-line-25)">docker&#160;networking</text><text class="terminal-2560423092-r4" x="463.6" y="630" textLength="451.4" clip-path="url(#terminal-2560423092-line-25)">&#160;between&#160;three&#160;containers:&#160;a&#160;postgres</text><text class="terminal-2560423092-r4" x="1268.8" y="630" textLength="12.2" clip-path="url(#terminal-2560423092-line-25)">
-</text><text class="terminal-2560423092-r4" x="0" y="654.4" textLength="915" clip-path="url(#terminal-2560423092-line-26)">&#160;&#160;│&#160;database,&#160;a&#160;redis&#160;cache,&#160;and&#160;my&#160;node.js&#160;API.&#160;They&#160;should&#160;be&#160;on&#160;the&#160;same</text><text class="terminal-2560423092-r4" x="1268.8" y="654.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-26)">
-</text><text class="terminal-2560423092-r4" x="0" y="678.8" textLength="756.4" clip-path="url(#terminal-2560423092-line-27)">&#160;&#160;│&#160;network&#160;but&#160;postgres&#160;should&#160;not&#160;be&#160;reachable&#160;from&#160;outside.</text><text class="terminal-2560423092-r4" x="1268.8" y="678.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-27)">
-</text><text class="terminal-2560423092-r4" x="0" y="703.2" textLength="1244.4" clip-path="url(#terminal-2560423092-line-28)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="703.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-28)">
-</text><text class="terminal-2560423092-r4" x="0" y="727.6" textLength="48.8" clip-path="url(#terminal-2560423092-line-29)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r15" x="48.8" y="727.6" textLength="268.4" clip-path="url(#terminal-2560423092-line-29)">##&#160;Prompt&#160;2&#160;—&#160;14:35:48</text><text class="terminal-2560423092-r4" x="1268.8" y="727.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-29)">
-</text><text class="terminal-2560423092-r4" x="0" y="752" textLength="1244.4" clip-path="url(#terminal-2560423092-line-30)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="752" textLength="12.2" clip-path="url(#terminal-2560423092-line-30)">
-</text><text class="terminal-2560423092-r4" x="0" y="776.4" textLength="915" clip-path="url(#terminal-2560423092-line-31)">&#160;&#160;│&#160;The&#160;compose&#160;file&#160;works&#160;but&#160;the&#160;API&#160;container&#160;can&#x27;t&#160;resolve&#160;the&#160;postgres</text><text class="terminal-2560423092-r4" x="1268.8" y="776.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-31)">
-</text><text class="terminal-2560423092-r4" x="0" y="800.8" textLength="841.8" clip-path="url(#terminal-2560423092-line-32)">&#160;&#160;│&#160;hostname.&#160;I&#x27;m&#160;getting&#160;ECONNREFUSED.&#160;Here&#x27;s&#160;my&#160;docker-compose.yml:</text><text class="terminal-2560423092-r4" x="1268.8" y="800.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-32)">
-</text><text class="terminal-2560423092-r4" x="0" y="825.2" textLength="1244.4" clip-path="url(#terminal-2560423092-line-33)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="825.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-33)">
-</text><text class="terminal-2560423092-r4" x="0" y="849.6" textLength="48.8" clip-path="url(#terminal-2560423092-line-34)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r15" x="48.8" y="849.6" textLength="268.4" clip-path="url(#terminal-2560423092-line-34)">##&#160;Prompt&#160;3&#160;—&#160;14:42:15</text><text class="terminal-2560423092-r4" x="1268.8" y="849.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-34)">
-</text><text class="terminal-2560423092-r4" x="0" y="874" textLength="1244.4" clip-path="url(#terminal-2560423092-line-35)">&#160;&#160;│&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;│</text><text class="terminal-2560423092-r4" x="1268.8" y="874" textLength="12.2" clip-path="url(#terminal-2560423092-line-35)">
-</text><text class="terminal-2560423092-r4" x="0" y="898.4" textLength="878.4" clip-path="url(#terminal-2560423092-line-36)">&#160;&#160;│&#160;Now&#160;I&#160;want&#160;to&#160;add&#160;a&#160;reverse&#160;proxy&#160;with&#160;nginx.&#160;How&#160;do&#160;I&#160;configure&#160;the</text><text class="terminal-2560423092-r4" x="1268.8" y="898.4" textLength="12.2" clip-path="url(#terminal-2560423092-line-36)">
-</text><text class="terminal-2560423092-r4" x="0" y="922.8" textLength="48.8" clip-path="url(#terminal-2560423092-line-37)">&#160;&#160;│&#160;</text><text class="terminal-2560423092-r16" x="48.8" y="922.8" textLength="170.8" clip-path="url(#terminal-2560423092-line-37)">docker&#160;network</text><text class="terminal-2560423092-r4" x="219.6" y="922.8" textLength="707.6" clip-path="url(#terminal-2560423092-line-37)">&#160;so&#160;nginx&#160;can&#160;reach&#160;the&#160;API&#160;but&#160;not&#160;the&#160;database&#160;directly?</text><text class="terminal-2560423092-r4" x="1268.8" y="922.8" textLength="12.2" clip-path="url(#terminal-2560423092-line-37)">
-</text><text class="terminal-2560423092-r4" x="0" y="947.2" textLength="1244.4" clip-path="url(#terminal-2560423092-line-38)">&#160;&#160;╰──────────────────────────────────────────────────────────────────────────────────────────────────╯</text><text class="terminal-2560423092-r4" x="1268.8" y="947.2" textLength="12.2" clip-path="url(#terminal-2560423092-line-38)">
-</text><text class="terminal-2560423092-r4" x="1268.8" y="971.6" textLength="12.2" clip-path="url(#terminal-2560423092-line-39)">
-</text>
+  <!-- Title bar -->
+  <rect width="960" height="32" rx="10" fill="url(#titlebar-bg)"/>
+  <rect x="0" y="22" width="960" height="10" fill="url(#titlebar-bg)"/>
+
+  <!-- Traffic lights -->
+  <circle cx="20" cy="16" r="6" fill="#ff5f57"/>
+  <circle cx="40" cy="16" r="6" fill="#febc2e"/>
+  <circle cx="60" cy="16" r="6" fill="#28c840"/>
+
+  <!-- Title -->
+  <text x="480" y="20" text-anchor="middle" fill="#c5c8c6" font-size="13" font-weight="bold">promptvault</text>
+
+  <g clip-path="url(#terminal-clip)">
+  <!-- Terminal content area -->
+  <g transform="translate(16, 44)" fill="#c5c8c6" font-size="13">
+
+    <!-- Shell prompt -->
+    <text y="14"><tspan fill="#6b8e9e">~/projects/</tspan><tspan fill="#68a0b3" font-weight="bold">myapp</tspan><tspan fill="#6b8e9e"> main</tspan><tspan fill="#868887"> &gt; </tspan><tspan fill="#98a84b">pv</tspan></text>
+    <text y="32" fill="#868887">Syncing... done.</text>
+
+    <!-- Top pane border -->
+    <rect x="4" y="46" width="920" height="232" rx="2" fill="none" stroke="#444" stroke-width="1"/>
+
+    <!-- FZF header area -->
+    <g transform="translate(14, 58)">
+      <!-- Search line -->
+      <text y="14"><tspan fill="#68a0b3">conv&gt; </tspan><tspan fill="#c5c8c6">docker networking</tspan></text>
+      <text y="32" fill="#868887">  8/156 (0)</text>
+      <text y="50" fill="#6b8e9e" font-style="italic">  156 conversations</text>
+
+      <!-- Selected row (highlighted) -->
+      <rect x="-6" y="56" width="904" height="18" fill="#2a5a8a" rx="1"/>
+      <text y="70" font-weight="bold">
+        <tspan fill="#c5c8c6">  03-25 14:30</tspan>
+        <tspan fill="#c5c8c6" dx="8">8p</tspan>
+        <tspan fill="#98a84b" dx="8">my-webapp</tspan>
+        <tspan fill="#ffffff" dx="32" font-weight="bold">Set up docker networking for</tspan>
+      </text>
+
+      <!-- Conversation rows -->
+      <text y="88">
+        <tspan fill="#868887">      03-25 10:15</tspan>
+        <tspan fill="#868887" dx="8">3p</tspan>
+        <tspan fill="#98a84b" dx="8">my-webapp</tspan>
+        <tspan fill="#c5c8c6" dx="32">Debug docker compose ports</tspan>
+      </text>
+      <text y="106">
+        <tspan fill="#868887">      03-24 22:40</tspan>
+        <tspan fill="#868887" dx="4">12p</tspan>
+        <tspan fill="#98a84b" dx="8">infra</tspan>
+        <tspan fill="#c5c8c6" dx="76">Migrate to docker swarm</tspan>
+      </text>
+      <text y="124">
+        <tspan fill="#868887">      03-24 16:05</tspan>
+        <tspan fill="#868887" dx="8">5p</tspan>
+        <tspan fill="#98a84b" dx="8">my-webapp</tspan>
+        <tspan fill="#c5c8c6" dx="32">Docker healthcheck not working</tspan>
+      </text>
+      <text y="142">
+        <tspan fill="#868887">      03-23 11:20</tspan>
+        <tspan fill="#868887" dx="8">2p</tspan>
+        <tspan fill="#d0b344" dx="8">~</tspan>
+        <tspan fill="#c5c8c6" dx="112">How does docker networking</tspan>
+      </text>
+      <text y="160">
+        <tspan fill="#868887">      03-22 09:45</tspan>
+        <tspan fill="#868887" dx="8">7p</tspan>
+        <tspan fill="#98a84b" dx="8">backend-api</tspan>
+        <tspan fill="#c5c8c6" dx="18">Add docker support to CI</tspan>
+      </text>
+      <text y="178">
+        <tspan fill="#868887">      03-21 17:30</tspan>
+        <tspan fill="#868887" dx="8">4p</tspan>
+        <tspan fill="#98a84b" dx="8">infra</tspan>
+        <tspan fill="#c5c8c6" dx="76">Docker registry auth setup</tspan>
+      </text>
+      <text y="196">
+        <tspan fill="#868887">      03-20 14:10</tspan>
+        <tspan fill="#868887" dx="4">15p</tspan>
+        <tspan fill="#98a84b" dx="8">my-webapp</tspan>
+        <tspan fill="#c5c8c6" dx="32">Containerize the app with</tspan>
+      </text>
     </g>
+
+    <!-- Keybinding help -->
+    <g transform="translate(14, 286)">
+      <text y="0" fill="#868887" font-size="12">ctrl-t mode | ctrl-p project | ctrl-d date</text>
+      <text y="16" fill="#868887" font-size="12">enter open | ctrl-y copy | ctrl-e export | ctrl-/ preview | tab select | esc quit</text>
+      <text y="32" fill="#868887" font-size="12">shift-up/down scroll preview</text>
     </g>
+
+    <!-- Bottom pane border -->
+    <rect x="4" y="324" width="920" height="396" rx="2" fill="none" stroke="#444" stroke-width="1"/>
+
+    <!-- Preview content -->
+    <g transform="translate(14, 340)">
+      <!-- Title -->
+      <text y="14" fill="#c5c8c6" font-weight="bold" font-size="14"># Set up docker networking for the staging environment</text>
+      <text y="34" fill="#868887">
+        <tspan font-weight="bold">**Project:**</tspan>
+        <tspan> my-webapp  </tspan>
+        <tspan font-weight="bold">**Duration:**</tspan>
+        <tspan> 45 min  </tspan>
+        <tspan font-weight="bold">**Prompts:**</tspan>
+        <tspan> 8</tspan>
+      </text>
+
+      <!-- Separator -->
+      <line x1="0" y1="46" x2="900" y2="46" stroke="#555" stroke-width="1"/>
+
+      <!-- Prompt 1 -->
+      <text y="70" fill="#a92a59" font-weight="bold">## Prompt 1 — 14:30:12</text>
+      <text y="94" fill="#c5c8c6">I need to set up <tspan font-weight="bold" fill="#d0b344">docker networking</tspan> between three containers: a postgres</text>
+      <text y="112" fill="#c5c8c6">database, a redis cache, and my node.js API. They should be on the same</text>
+      <text y="130" fill="#c5c8c6">network but postgres should not be reachable from outside.</text>
+
+      <!-- Prompt 2 -->
+      <text y="162" fill="#a92a59" font-weight="bold">## Prompt 2 — 14:35:48</text>
+      <text y="186" fill="#c5c8c6">The compose file works but the API container can't resolve the postgres</text>
+      <text y="204" fill="#c5c8c6">hostname. I'm getting ECONNREFUSED. Here's my docker-compose.yml:</text>
+
+      <!-- Prompt 3 -->
+      <text y="236" fill="#a92a59" font-weight="bold">## Prompt 3 — 14:42:15</text>
+      <text y="260" fill="#c5c8c6">Now I want to add a reverse proxy with nginx. How do I configure the</text>
+      <text y="278" fill="#c5c8c6"><tspan font-weight="bold" fill="#d0b344">docker network</tspan> so nginx can reach the API but not the database directly?</text>
+    </g>
+
+  </g>
+  </g>
 </svg>

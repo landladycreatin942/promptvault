@@ -9,6 +9,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -17,6 +18,15 @@ from promptvault import __version__
 DEFAULT_DB_PATH = Path.home() / ".claude" / "prompt-library" / "prompts.db"
 DEFAULT_VAULT_DIR = Path.home() / ".claude" / "prompt-library" / "vault"
 
+# Synonym map for FTS query expansion — broadens recall for common intent words
+SYNONYMS: dict[str, list[str]] = {
+    "test": ["test", "pytest", "unittest", "testing"],
+    "fix": ["fix", "bug", "patch", "repair", "debug"],
+    "add": ["add", "create", "implement", "new", "feature"],
+    "refactor": ["refactor", "restructure", "reorganize", "clean"],
+    "deploy": ["deploy", "release", "ship", "publish"],
+}
+
 # ANSI colors
 BOLD = "\033[1m"
 DIM = "\033[2m"
@@ -24,6 +34,67 @@ CYAN = "\033[36m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
 RESET = "\033[0m"
+
+
+# ---------------------------------------------------------------------------
+# Tags database — separate from prompts.db to survive sync rebuilds
+# ---------------------------------------------------------------------------
+
+
+def _get_tags_db(db_path: Path) -> sqlite3.Connection:
+    """Open (or create) tags.db alongside the given prompts.db path."""
+    tags_path = db_path.parent / "tags.db"
+    conn = sqlite3.connect(str(tags_path))
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS tags (
+            session_id TEXT NOT NULL,
+            tag TEXT NOT NULL,
+            created_ts INTEGER NOT NULL,
+            PRIMARY KEY (session_id, tag)
+        )"""
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_tags_tag ON tags(tag)")
+    conn.commit()
+    return conn
+
+
+def _tag_session(conn: sqlite3.Connection, session_id: str, tag: str) -> None:
+    """Add a tag to a session. Idempotent — ignores duplicates."""
+    conn.execute(
+        "INSERT OR IGNORE INTO tags (session_id, tag, created_ts) VALUES (?, ?, ?)",
+        (session_id, tag, int(time.time())),
+    )
+    conn.commit()
+
+
+def _toggle_tag(conn: sqlite3.Connection, session_id: str, tag: str) -> None:
+    """Toggle a tag: add if absent, remove if present."""
+    exists = conn.execute(
+        "SELECT 1 FROM tags WHERE session_id = ? AND tag = ?",
+        (session_id, tag),
+    ).fetchone()
+    if exists:
+        _untag_session(conn, session_id, tag)
+    else:
+        _tag_session(conn, session_id, tag)
+
+
+def _untag_session(conn: sqlite3.Connection, session_id: str, tag: str) -> None:
+    """Remove a tag from a session. No-op if tag doesn't exist."""
+    conn.execute(
+        "DELETE FROM tags WHERE session_id = ? AND tag = ?",
+        (session_id, tag),
+    )
+    conn.commit()
+
+
+def _get_tagged_sessions(conn: sqlite3.Connection, tag: str) -> list[str]:
+    """Return session IDs that have the given tag."""
+    rows = conn.execute(
+        "SELECT session_id FROM tags WHERE tag = ? ORDER BY created_ts DESC",
+        (tag,),
+    ).fetchall()
+    return [r[0] for r in rows]
 
 
 def _auto_sync_if_stale(db_path: Path):
@@ -161,12 +232,15 @@ def _build_conversation_lines(
     query: str | None = None,
     project: str | None = None,
     date_range: str | None = None,
+    tag: str | None = None,
+    db_path: Path | None = None,
 ) -> list[str]:
-    """Build conversation lines for fzf. Format: 'md_path\\tdate  Np  project  title'.
+    """Build conversation lines for fzf. Format: 'md_path\\tdate  Np  project  title\\tsession_id'.
 
     Optional filters:
     - project: partial match on conversation project path
     - date_range: 'today', 'week', or 'month' preset
+    - tag: filter to sessions with this tag (requires db_path for tags.db)
     """
     if query:
         # Find conversations that contain matching prompts
@@ -188,6 +262,13 @@ def _build_conversation_lines(
         ts_ms = _date_range_to_epoch_ms(date_range)
         where += " AND start_ts >= ?"
         params.append(ts_ms)
+    if tag and db_path:
+        tagged_ids = _get_tagged_sessions(_get_tags_db(db_path), tag)
+        if not tagged_ids:
+            return []
+        tag_placeholders = ",".join("?" * len(tagged_ids))
+        where += f" AND session_id IN ({tag_placeholders})"
+        params.extend(tagged_ids)
 
     rows = conn.execute(
         f"""
@@ -199,13 +280,22 @@ def _build_conversation_lines(
         params,
     ).fetchall()
 
+    # Load favorites to show ★ marker
+    fav_ids: set[str] = set()
+    if db_path:
+        try:
+            fav_ids = set(_get_tagged_sessions(_get_tags_db(db_path), "bookmarked"))
+        except Exception:
+            pass
+
     lines = []
-    for _sid, display_name, project, start_ts, _end_ts, prompt_count, md_path in rows:
+    for sid, display_name, project, start_ts, _end_ts, prompt_count, md_path in rows:
         proj = _short_project(project)
         date_str = ts_to_short(start_ts)
         title = _short_title(display_name)
-        # Field 1: md_path (hidden), Field 2: visible display, Field 3: full text (hidden, searchable)
-        line = f"{md_path}\t{date_str}  {prompt_count:2d}p  {proj:16s}  {title}"
+        star = "★ " if sid in fav_ids else "  "
+        # Field 1: md_path (hidden), Field 2: visible display, Field 3: session_id (hidden, for tags)
+        line = f"{md_path}\t{star}{date_str}  {prompt_count:2d}p  {proj:16s}  {title}\t{sid}"
         lines.append(line)
     return lines
 
@@ -246,13 +336,29 @@ def _build_prompt_lines(conn: sqlite3.Connection, query: str | None = None) -> l
 
 
 def _fts_prepare_query(query: str) -> str:
-    """Prepare query for FTS5: add prefix wildcard for partial word matching."""
+    """Prepare query for FTS5: expand synonyms and add prefix wildcard.
+
+    Words matching SYNONYMS keys are expanded to OR groups for broader recall.
+    The last word gets a prefix wildcard for typeahead matching.
+    """
     words = query.strip().split()
     if not words:
         return query
-    # Add * to last word for prefix matching (user is still typing)
-    words[-1] = words[-1] + "*"
-    return " ".join(words)
+    parts: list[str] = []
+    for i, word in enumerate(words):
+        lower = word.lower()
+        is_last = i == len(words) - 1
+        if lower in SYNONYMS:
+            syns = SYNONYMS[lower]
+            # Last synonym word gets prefix wildcard for typeahead
+            if is_last:
+                expanded = " OR ".join(s + "*" for s in syns)
+            else:
+                expanded = " OR ".join(syns)
+            parts.append(f"({expanded})")
+        else:
+            parts.append(word + "*" if is_last else word)
+    return " ".join(parts)
 
 
 def _fts_session_ids(conn: sqlite3.Connection, query: str) -> list[str]:
@@ -297,12 +403,45 @@ def _fzf_preview_script(vault_dir: Path) -> str:
         f"| head -3 | tr '\\n' ' '; echo; "
         # Line 3: separator
         f"echo '---'; "
-        # Prompt content with optional query highlighting
-        f'if [ -n "$q" ]; then '
+        # Prompt content: prefer bat for syntax highlighting, fall back to sed+grep
+        f"if command -v bat >/dev/null 2>&1; then "
+        f'bat --style=plain --color=always --language=markdown "$file" 2>/dev/null | '
+        # Skip first 3 lines (already shown as header) via tail
+        f"tail -n +4; "
+        f'elif [ -n "$q" ]; then '
         f"sed -n '/^## Prompt/,$p' \"$file\" | cat -s | "
         f"GREP_COLOR='1;33' grep --color=always -i -E \"$q|$\"; "
         f"else "
         f"sed -n '/^## Prompt/,$p' \"$file\" | cat -s; "
+        f"fi; "
+        f"fi"
+    )
+
+
+def _fzf_prompt_preview_script(vault_dir: Path) -> str:
+    """Shell preview for prompt mode: show full conversation scrolled to matching prompt.
+
+    Extracts a prompt text fragment from the fzf line (field 2), finds its line number
+    in the conversation file, and displays the file starting from that line.
+    """
+    return (
+        f"md_path=$(echo {{}} | cut -f1); "
+        f"file='{vault_dir}/'\"$md_path\"; "
+        f'if [ ! -f "$file" ]; then echo "File not found"; '
+        f"else "
+        # Extract prompt fragment (first 40 chars of visible field) for grep
+        f"fragment=$(echo {{}} | cut -f2 | sed 's/^[0-9-]* [0-9:]* *//' "
+        f"| sed 's/^ *[^ ]* *//' | head -c 40); "
+        # Find line number of matching prompt in the conversation file
+        f'line=$(grep -n -F "$fragment" "$file" 2>/dev/null | head -1 | cut -d: -f1); '
+        # Show file with bat (scrolled) or sed fallback
+        f'if command -v bat >/dev/null 2>&1 && [ -n "$line" ]; then '
+        f"bat --style=plain --color=always --language=markdown "
+        f'--line-range "$line:" "$file" 2>/dev/null; '
+        f'elif [ -n "$line" ]; then '
+        f'sed -n "${{line}},\\$p" "$file" | cat -s; '
+        f"else "
+        f'cat -s "$file"; '
         f"fi; "
         f"fi"
     )
@@ -422,10 +561,11 @@ def _build_transform_bindings(pv_bin: str, db_path: Path) -> list[str]:
     bindings: list[str] = []
 
     # ctrl-t: toggle between conversation and prompt views
+    # Both modes output md_path as field 1, so the same preview script works for both
     conv_reload = f"{pv_bin} --db {db_path} _fzf-lines {{q}}"
     prompt_reload = f"{pv_bin} --db {db_path} _fzf-prompt-lines {{q}}"
     ctrl_t_script = (
-        f'p="{{fzf:prompt}}"; '
+        f'p="$FZF_PROMPT"; '
         f'if echo "$p" | grep -q "^prompt"; then '
         f'echo "change-prompt(conv> )+reload({conv_reload} 2>/dev/null || true)'
         f'+change-header(Conversations)"; '
@@ -453,7 +593,7 @@ def _build_transform_bindings(pv_bin: str, db_path: Path) -> list[str]:
         )
         # Use grep for robust prompt state detection
         parts.append(
-            f'p="{{fzf:prompt}}"; '
+            f'p="$FZF_PROMPT"; '
             f'if ! echo "$p" | grep -q "\\["; then '
             f'echo "change-prompt(conv [{proj_names[0]}]> )'
             f"+reload({reload_first} 2>/dev/null || true)"
@@ -486,7 +626,7 @@ def _build_transform_bindings(pv_bin: str, db_path: Path) -> list[str]:
     # Use grep for robust prompt state detection (avoids bash regex escaping issues)
     reload_base = f"{pv_bin} --db {db_path} _fzf-lines"
     ctrl_d_script = (
-        f'p="{{fzf:prompt}}"; '
+        f'p="$FZF_PROMPT"; '
         f'if echo "$p" | grep -q today; then '
         f'echo "change-prompt(conv [week]> )+reload({reload_base} --date-range week {{q}} 2>/dev/null || true)'
         f'+change-header(This week)"; '
@@ -503,7 +643,55 @@ def _build_transform_bindings(pv_bin: str, db_path: Path) -> list[str]:
     )
     bindings.extend(["--bind", f"ctrl-d:transform:{ctrl_d_script}"])
 
+    # ctrl-g: toggle favorites filter (all → favorites → all)
+    reload_fav = f"{pv_bin} --db {db_path} _fzf-lines --tag bookmarked {{q}}"
+    reload_all_g = f"{pv_bin} --db {db_path} _fzf-lines {{q}}"
+    ctrl_g_script = (
+        f'p="$FZF_PROMPT"; '
+        f'if echo "$p" | grep -q "★"; then '
+        f'echo "change-prompt(conv> )+reload({reload_all_g} 2>/dev/null || true)'
+        f'+change-header(All conversations)"; '
+        f"else "
+        f'echo "change-prompt(conv [★]> )+reload({reload_fav} 2>/dev/null || true)'
+        f'+change-header(★ Favorites only)"; '
+        f"fi"
+    )
+    bindings.extend(["--bind", f"ctrl-g:transform:{ctrl_g_script}"])
+
     return bindings
+
+
+def _build_version_gated_flags(fzf_ver: tuple[int, ...], vault_dir: Path) -> list[str]:
+    """Build fzf flags that require specific fzf versions."""
+    flags: list[str] = []
+    if fzf_ver >= (0, 33, 0):
+        flags.append("--scheme=history")
+    if fzf_ver >= (0, 38, 0):
+        editor = os.environ.get("EDITOR", "less")
+        flags.extend(["--bind", f"ctrl-o:become({editor} {vault_dir}/{{1}})"])
+    if fzf_ver >= (0, 53, 0):
+        flags.append("--highlight-line")
+    if fzf_ver >= (0, 54, 0):
+        flags.append("--ghost=Type to search prompts...")
+    # --style=full adds per-section borders that eat too much width on small terminals
+    if fzf_ver >= (0, 60, 0):
+        flags.extend(["--bind", "ctrl-x:exclude"])
+    # Note: toggle-raw is incompatible with --disabled mode (all items are "matching")
+    return flags
+
+
+def _build_footer(fzf_ver: tuple[int, ...], db_path: Path | None) -> str:
+    """Build version-gated footer string. Returns empty string if fzf < 0.53."""
+    if fzf_ver < (0, 53, 0):
+        return ""
+    # Footer must fit ~66 usable chars (80-col terminal minus fzf borders)
+    line1 = "^o open ^y copy ^e export ^/ prev  esc quit"
+    if fzf_ver >= (0, 60, 0):
+        line1 = "^o open ^y copy ^e export ^x excl ^/ prev  esc"
+    if db_path and fzf_ver >= (0, 45, 0):
+        line2 = "^t mode ^p project ^d date ^b ★fav ^g show★"
+        return line2 + "\n" + line1
+    return line1
 
 
 def _run_fzf(
@@ -534,7 +722,7 @@ def _run_fzf(
         "--multi",
         "--preview",
         _fzf_preview_script(vault_dir),
-        "--preview-window=down:60%:wrap:~3",  # down = full-width for text selection
+        "--preview-window=down:40%:wrap:~3",  # bottom to keep footer full-width
         f"--header={header}",
         f"--prompt={prompt}",
         "--no-sort",  # keep our ordering (by date)
@@ -542,8 +730,16 @@ def _run_fzf(
         "--height=90%",
         "--layout=reverse",
         "--border=rounded",
-        "--color=header:italic:dim,prompt:cyan,pointer:cyan,marker:green",
     ]
+
+    # Build color string — enhanced with striped rows when fzf >= 0.62
+    if fzf_ver >= (0, 62, 0):
+        fzf_cmd.append(
+            "--color=bg:-1,alt-bg:237,current-bg:236,header:italic:dim,"
+            "prompt:cyan,pointer:cyan,marker:green,hl:yellow,hl+:yellow:bold"
+        )
+    else:
+        fzf_cmd.append("--color=header:italic:dim,prompt:cyan,pointer:cyan,marker:green")
 
     # Copy and export via hidden subcommand
     # View detection: conv view exports full conversations, prompt view exports prompt text
@@ -572,6 +768,8 @@ def _run_fzf(
             "--bind",
             "ctrl-/:toggle-preview",
             "--bind",
+            "tab:toggle,btab:toggle",  # toggle without auto-advance
+            "--bind",
             "shift-up:preview-up,shift-down:preview-down",
             # enter opens editor via execute() and returns to fzf afterward
             "--bind",
@@ -581,23 +779,10 @@ def _run_fzf(
         ]
     )
 
-    # Version-gated features: highlight-line, ghost text, footer, tmux popup
-    if fzf_ver >= (0, 53, 0):
-        fzf_cmd.append("--highlight-line")
-    if fzf_ver >= (0, 54, 0):
-        fzf_cmd.append("--ghost=Type to search prompts...")
-    if fzf_ver >= (0, 53, 0):
-        # Include transform keybindings in footer when features are active
-        footer_line1 = (
-            "enter open | ctrl-y copy | ctrl-e export | ctrl-/ preview | tab select | esc quit"
-        )
-        footer_scroll = "shift-up/down scroll preview"
-        if db_path and fzf_ver >= (0, 45, 0):
-            footer_line2 = "ctrl-t mode | ctrl-p project | ctrl-d date"
-            base_footer = footer_line2 + "\n" + footer_line1 + "\n" + footer_scroll
-        else:
-            base_footer = footer_line1 + "\n" + footer_scroll
-        fzf_cmd.append(f"--footer={base_footer}")
+    fzf_cmd.extend(_build_version_gated_flags(fzf_ver, vault_dir))
+    footer = _build_footer(fzf_ver, db_path)
+    if footer:
+        fzf_cmd.append(f"--footer={footer}")
     if os.environ.get("TMUX") and fzf_ver >= (0, 38, 0):
         fzf_cmd.extend(["--tmux", "center,80%,60%"])
 
@@ -621,6 +806,28 @@ def _run_fzf(
                     break
 
             fzf_cmd.extend(_build_transform_bindings(pv_bin, db_path))
+
+            # ctrl-b: toggle favorite then reload respecting current filter
+            tag_cmd = (
+                f"{pv_bin} --db {db_path} _fzf-tag --toggle --session-id {{3}} --tag bookmarked"
+            )
+            reload_all = f"{pv_bin} --db {db_path} _fzf-lines {{q}}"
+            reload_fav = f"{pv_bin} --db {db_path} _fzf-lines --tag bookmarked {{q}}"
+            # Use transform to pick the right reload based on current mode
+            ctrl_b_script = (
+                f'p="$FZF_PROMPT"; '
+                f'if echo "$p" | grep -q "★"; then '
+                f'echo "reload({reload_fav} 2>/dev/null || true)"; '
+                f"else "
+                f'echo "reload({reload_all} 2>/dev/null || true)"; '
+                f"fi"
+            )
+            fzf_cmd.extend(
+                [
+                    "--bind",
+                    f"ctrl-b:execute-silent({tag_cmd})+transform:{ctrl_b_script}",
+                ]
+            )
 
     if query:
         fzf_cmd.extend(["--query", query])
@@ -842,9 +1049,48 @@ def cmd_list(args: argparse.Namespace, db_path: Path):
             print()
 
 
+def _build_stats_lines(conn: sqlite3.Connection) -> list[str]:
+    """Build project summary lines for interactive stats drill-down.
+
+    Format: 'project_name\\tN convs | M prompts | date_range'
+    """
+    rows = conn.execute(
+        """
+        SELECT project, COUNT(*) as conv_cnt,
+               SUM(prompt_count) as prompt_cnt,
+               MIN(start_ts) as first_ts, MAX(end_ts) as last_ts
+        FROM conversations
+        WHERE prompt_count > 0
+        GROUP BY project
+        ORDER BY conv_cnt DESC
+        """
+    ).fetchall()
+    lines: list[str] = []
+    for project, conv_cnt, prompt_cnt, first_ts, last_ts in rows:
+        proj = _short_project(project)
+        date_range = f"{ts_to_short(first_ts)} — {ts_to_short(last_ts)}" if first_ts else ""
+        line = f"{proj}\t{conv_cnt} convs | {prompt_cnt} prompts | {date_range}"
+        lines.append(line)
+    return lines
+
+
 def cmd_stats(args: argparse.Namespace, db_path: Path):
-    """Show vault statistics."""
+    """Show vault statistics. Interactive fzf drill-down when available, static fallback."""
     conn = get_db(db_path)
+    vault_dir = Path(os.environ.get("PROMPTVAULT_VAULT", str(DEFAULT_VAULT_DIR)))
+    no_fzf = getattr(args, "no_fzf", False)
+
+    # Interactive stats: fzf-based project drill-down
+    if not no_fzf and has_fzf() and sys.stdout.isatty():
+        lines = _build_stats_lines(conn)
+        if lines:
+            _run_fzf(
+                lines,
+                vault_dir,
+                header="Projects · select to browse conversations",
+                prompt="stats> ",
+            )
+            return
 
     conv_count = conn.execute(
         "SELECT COUNT(*) FROM conversations WHERE prompt_count > 0"
@@ -885,6 +1131,72 @@ def cmd_stats(args: argparse.Namespace, db_path: Path):
             print(f"    {project_short:22s} {bar} {cnt}")
 
     print()
+
+
+def cmd_export(args: argparse.Namespace, db_path: Path) -> None:
+    """Batch export prompts matching a query in json, csv, or md format."""
+    import csv
+    import io
+    import json
+
+    conn = get_db(db_path)
+    rows = _fts_search(conn, args.query, limit=1000)
+
+    if not rows:
+        if args.format == "json":
+            output = "[]"
+        else:
+            output = f"No results for '{args.query}'"
+        if args.output:
+            Path(args.output).write_text(output)
+        else:
+            print(output)
+        return
+
+    if args.format == "json":
+        data = []
+        for prompt_text, ts, project, conv_name, md_path, _rank in rows:
+            data.append(
+                {
+                    "prompt": prompt_text,
+                    "timestamp": ts,
+                    "project": project,
+                    "conversation": conv_name,
+                    "md_path": md_path,
+                }
+            )
+        output = json.dumps(data, indent=2, ensure_ascii=False)
+    elif args.format == "csv":
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(["prompt", "timestamp", "project", "conversation", "md_path"])
+        for prompt_text, ts, project, conv_name, md_path, _rank in rows:
+            writer.writerow([prompt_text, ts, project, conv_name, md_path])
+        output = buf.getvalue()
+    else:
+        # Markdown format
+        parts = []
+        for prompt_text, ts, project, conv_name, _md_path, _rank in rows:
+            parts.append(
+                f"## {ts_to_str(ts)} — {conv_name}\n\n**Project:** {project}\n\n{prompt_text}\n"
+            )
+        output = "\n---\n\n".join(parts)
+
+    if args.output:
+        Path(args.output).write_text(output)
+    else:
+        print(output)
+
+
+def _cmd_shell_init(shell: str) -> None:
+    """Print eval-able shell widget snippet for the given shell."""
+    shell_dir = Path(__file__).parent / "shell"
+    widget_file = shell_dir / f"pv-widget.{shell}"
+    if widget_file.exists():
+        print(widget_file.read_text())
+    else:
+        print(f"# Shell widget not found: {widget_file}", file=sys.stderr)
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -941,6 +1253,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["today", "week", "month"],
         help="Filter by date preset",
     )
+    fzf_p.add_argument("--tag", default=None, help="Filter by tag")
     fzf_p.add_argument("query", nargs="?", default=None)
 
     # hidden: used by fzf reload in prompt mode
@@ -953,7 +1266,106 @@ def build_parser() -> argparse.ArgumentParser:
     fzf_action_p.add_argument("--view", required=True, choices=["conv", "prompt"])
     fzf_action_p.add_argument("--items-file", required=True)
 
+    # hidden: used by fzf ctrl-b to toggle tags
+    fzf_tag_p = subparsers.add_parser("_fzf-tag")
+    fzf_tag_p.add_argument("--session-id", required=True)
+    fzf_tag_p.add_argument("--tag", required=True)
+    fzf_tag_p.add_argument("--remove", action="store_true", help="Remove tag instead of adding")
+    fzf_tag_p.add_argument(
+        "--toggle", action="store_true", help="Toggle tag (add if absent, remove if present)"
+    )
+
+    # hidden: list distinct tags
+    subparsers.add_parser("_fzf-tags")
+
+    # hidden: widget lines for shell integration (recent prompts, text only)
+    subparsers.add_parser("_fzf-widget-lines")
+
+    # shell-init: print eval-able shell widget snippet
+    shell_init_p = subparsers.add_parser("shell-init", help="Print shell widget snippet")
+    shell_init_p.add_argument("shell", choices=["zsh", "bash"], help="Target shell")
+
+    # export: batch export prompts
+    export_p = subparsers.add_parser("export", help="Export prompts (json/csv/md)")
+    export_p.add_argument("--query", required=True, help="Search query")
+    export_p.add_argument(
+        "--format", default="md", choices=["json", "csv", "md"], help="Output format"
+    )
+    export_p.add_argument("--output", help="Output file (default: stdout)")
+
     return parser
+
+
+def _dispatch_hidden_command(args: argparse.Namespace, db_path: Path) -> bool:
+    """Handle hidden subcommands (fzf reload, tags, shell). Returns True if handled."""
+    cmd = args.command
+
+    if cmd == "_fzf-lines":
+        conn = sqlite3.connect(str(db_path))
+        q = args.query if args.query and args.query.strip() else None
+        lines = _build_conversation_lines(
+            conn,
+            q,
+            project=getattr(args, "project", None),
+            date_range=getattr(args, "date_range", None),
+            tag=getattr(args, "tag", None),
+            db_path=db_path,
+        )
+        sys.stdout.write("\n".join(lines) + "\n" if lines else "")
+        return True
+
+    if cmd == "_fzf-prompt-lines":
+        conn = sqlite3.connect(str(db_path))
+        q = args.query if args.query and args.query.strip() else None
+        sys.stdout.write("\n".join(_build_prompt_lines(conn, q)) + "\n")
+        return True
+
+    if cmd == "_fzf-action":
+        cmd_fzf_action(args, db_path)
+        return True
+
+    if cmd == "_fzf-tag":
+        tags_conn = _get_tags_db(db_path)
+        if args.remove:
+            _untag_session(tags_conn, args.session_id, args.tag)
+        elif getattr(args, "toggle", False):
+            _toggle_tag(tags_conn, args.session_id, args.tag)
+        else:
+            _tag_session(tags_conn, args.session_id, args.tag)
+        tags_conn.close()
+        return True
+
+    if cmd == "_fzf-tags":
+        tags_conn = _get_tags_db(db_path)
+        for (tag,) in tags_conn.execute("SELECT DISTINCT tag FROM tags ORDER BY tag").fetchall():
+            print(tag)
+        tags_conn.close()
+        return True
+
+    if cmd == "_fzf-widget-lines":
+        conn = sqlite3.connect(str(db_path))
+        rows = conn.execute(
+            """
+            SELECT p.prompt_text, p.timestamp
+            FROM prompts p
+            WHERE p.prompt_text NOT GLOB '/[a-z]*'
+              AND p.prompt_text NOT GLOB '[[]Image #[0-9]*[]]'
+              AND LENGTH(TRIM(p.prompt_text)) > 0
+            ORDER BY p.timestamp DESC
+            LIMIT 200
+            """,
+        ).fetchall()
+        for prompt_text, ts in rows:
+            text = clean_prompt_text(prompt_text)
+            if text:
+                sys.stdout.write(f"{ts_to_short(ts)}\t{text}\n")
+        return True
+
+    if cmd == "shell-init":
+        _cmd_shell_init(args.shell)
+        return True
+
+    return False
 
 
 def main():
@@ -967,24 +1379,8 @@ def main():
         pass  # already set
 
     # Hidden: fast line output for fzf reload (skip auto-sync for speed)
-    if args.command == "_fzf-lines":
-        conn = sqlite3.connect(str(db_path))
-        q = args.query if args.query and args.query.strip() else None
-        proj = getattr(args, "project", None)
-        dr = getattr(args, "date_range", None)
-        lines = _build_conversation_lines(conn, q, project=proj, date_range=dr)
-        sys.stdout.write("\n".join(lines) + "\n" if lines else "")
-        return
-
-    if args.command == "_fzf-prompt-lines":
-        conn = sqlite3.connect(str(db_path))
-        q = args.query if args.query and args.query.strip() else None
-        lines = _build_prompt_lines(conn, q)
-        sys.stdout.write("\n".join(lines) + "\n" if lines else "")
-        return
-
-    if args.command == "_fzf-action":
-        cmd_fzf_action(args, db_path)
+    # Hidden subcommands: fast-path for fzf reload, tags, shell widget (skip auto-sync)
+    if _dispatch_hidden_command(args, db_path):
         return
 
     commands = {
@@ -992,6 +1388,7 @@ def main():
         "recent": cmd_recent,
         "list": cmd_list,
         "stats": cmd_stats,
+        "export": cmd_export,
     }
 
     if args.command in commands:

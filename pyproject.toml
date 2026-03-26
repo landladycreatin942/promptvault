@@ -38,6 +38,9 @@ pv-sync = "promptvault.sync:main"
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.package-data]
+promptvault = ["shell/*.zsh", "shell/*.bash"]
+
 [tool.ruff]
 line-length = 100
 

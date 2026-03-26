@@ -9,12 +9,17 @@ import pytest
 
 from promptvault.sync import build_database, parse_history
 from promptvault.search import (
+    SYNONYMS,
     _build_conversation_lines,
     _build_prompt_lines,
     _fts_prepare_query,
     _fts_search,
+    _get_tagged_sessions,
+    _get_tags_db,
     _short_project,
     _short_title,
+    _tag_session,
+    _untag_session,
     clean_prompt_text,
     truncate,
 )
@@ -117,10 +122,10 @@ class TestBuildConversationLines:
         lines = _build_conversation_lines(conn)
         # Should return conversations with prompt_count > 0
         assert len(lines) >= 1
-        # Each line has tab-separated fields: md_path\tvisible
+        # Each line has tab-separated fields: md_path\tvisible\tsession_id
         for line in lines:
             parts = line.split("\t")
-            assert len(parts) == 2
+            assert len(parts) == 3
             assert parts[0].endswith(".md")  # md_path
 
     def test_returns_lines_with_query(self, db_path: Path):
@@ -313,3 +318,146 @@ class TestShortProject:
         result = _short_project("/Users/test/a-very-long-project-name-here")
         assert len(result) <= 20
         assert result.endswith("…")
+
+
+# ---------------------------------------------------------------------------
+# A1: Synonym expansion + --scheme=history
+# ---------------------------------------------------------------------------
+
+
+class TestSynonymExpansion:
+    def test_synonyms_dict_exists_and_has_entries(self):
+        """SYNONYMS must be a dict with at least the documented keys."""
+        assert isinstance(SYNONYMS, dict)
+        assert "test" in SYNONYMS
+        assert "fix" in SYNONYMS
+        assert "add" in SYNONYMS
+
+    def test_fts_prepare_query_expands_synonym(self):
+        """A single synonym word should expand to OR clause."""
+        result = _fts_prepare_query("fix")
+        # Must contain OR-expanded synonyms for "fix"
+        assert "OR" in result
+        for syn in SYNONYMS["fix"]:
+            assert syn in result
+
+    def test_fts_prepare_query_preserves_non_synonym_words(self):
+        """Words not in SYNONYMS should pass through with prefix wildcard on last."""
+        result = _fts_prepare_query("authentication")
+        # Not a synonym key, so no OR expansion
+        assert "OR" not in result
+        assert "authentication*" in result
+
+    def test_fts_prepare_query_mixed_synonym_and_plain(self):
+        """Mixed query: synonym word expands, plain word gets wildcard."""
+        result = _fts_prepare_query("fix auth")
+        assert "OR" in result  # "fix" expanded
+        assert "auth*" in result  # last word gets wildcard
+
+    def test_fts_prepare_query_multiple_synonyms(self):
+        """Multiple synonym words should each expand."""
+        result = _fts_prepare_query("test fix")
+        # Both "test" and "fix" should be expanded
+        for syn in SYNONYMS["test"]:
+            assert syn in result
+        for syn in SYNONYMS["fix"]:
+            assert syn in result
+
+
+# ---------------------------------------------------------------------------
+# A2: Tags database CRUD
+# ---------------------------------------------------------------------------
+
+
+class TestTagsDatabase:
+    def test_get_tags_db_creates_file_and_table(self, tmp_path):
+        """_get_tags_db creates tags.db with the tags table."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()  # Simulate existing prompts.db
+        conn = _get_tags_db(db_path)
+        # Table must exist
+        tables = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='tags'"
+        ).fetchall()
+        assert len(tables) == 1
+        # tags.db must be sibling of prompts.db
+        tags_db_path = tmp_path / "tags.db"
+        assert tags_db_path.exists()
+        conn.close()
+
+    def test_tag_session_adds_tag(self, tmp_path):
+        """_tag_session inserts a tag for a session."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _tag_session(conn, "sess-1", "bookmarked")
+        rows = conn.execute("SELECT * FROM tags WHERE session_id='sess-1'").fetchall()
+        assert len(rows) == 1
+        assert rows[0][1] == "bookmarked"
+        conn.close()
+
+    def test_tag_session_idempotent(self, tmp_path):
+        """Tagging the same session+tag twice should not raise or duplicate."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _tag_session(conn, "sess-1", "bookmarked")
+        _tag_session(conn, "sess-1", "bookmarked")  # duplicate
+        rows = conn.execute(
+            "SELECT * FROM tags WHERE session_id='sess-1' AND tag='bookmarked'"
+        ).fetchall()
+        assert len(rows) == 1
+        conn.close()
+
+    def test_untag_session_removes_tag(self, tmp_path):
+        """_untag_session removes a specific tag."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _tag_session(conn, "sess-1", "bookmarked")
+        _untag_session(conn, "sess-1", "bookmarked")
+        rows = conn.execute("SELECT * FROM tags WHERE session_id='sess-1'").fetchall()
+        assert len(rows) == 0
+        conn.close()
+
+    def test_untag_nonexistent_is_noop(self, tmp_path):
+        """Untagging a non-existent tag should not raise."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _untag_session(conn, "sess-1", "nonexistent")  # should not raise
+        conn.close()
+
+    def test_get_tagged_sessions_returns_matching(self, tmp_path):
+        """_get_tagged_sessions returns session IDs with the given tag."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _tag_session(conn, "sess-1", "bookmarked")
+        _tag_session(conn, "sess-2", "bookmarked")
+        _tag_session(conn, "sess-3", "important")
+        result = _get_tagged_sessions(conn, "bookmarked")
+        assert set(result) == {"sess-1", "sess-2"}
+        conn.close()
+
+    def test_get_tagged_sessions_empty_when_no_tags(self, tmp_path):
+        """_get_tagged_sessions returns empty list when no tags exist."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        result = _get_tagged_sessions(conn, "bookmarked")
+        assert result == []
+        conn.close()
+
+    def test_tags_persist_across_connections(self, tmp_path):
+        """Tags survive closing and reopening the connection (separate DB)."""
+        db_path = tmp_path / "prompts.db"
+        db_path.touch()
+        conn = _get_tags_db(db_path)
+        _tag_session(conn, "sess-1", "bookmarked")
+        conn.close()
+        # Reopen
+        conn2 = _get_tags_db(db_path)
+        result = _get_tagged_sessions(conn2, "bookmarked")
+        assert result == ["sess-1"]
+        conn2.close()

@@ -71,6 +71,14 @@ bump-version-patch: fetch-tags setup-dev-env
 
 push-tag: fetch-tags
 	git push --follow-tags origin main
+	@TAG=$$(cat VERSION); \
+	PREV=$$(git tag --sort=-v:refname | sed -n "/$${TAG}/{ n; p; q; }"); \
+	if [ -n "$$PREV" ]; then \
+		NOTES=$$(git log --pretty=format:'- %s' $$PREV..$$TAG | grep -v '^- bump:'); \
+	else \
+		NOTES=$$(git log --pretty=format:'- %s' $$TAG | grep -v '^- bump:'); \
+	fi; \
+	gh release create $$TAG --title "v$$TAG" --notes "$$NOTES" --latest
 
 sync:
 	promptvault-sync

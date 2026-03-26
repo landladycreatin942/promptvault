@@ -85,6 +85,54 @@ class TestResolvePastedContent:
         assert "def hello():" in prompts[0]["display"]
         assert "[Pasted text" not in prompts[0]["display"]
 
+    def test_hash_referenced_paste_resolved_from_cache(self, tmp_path: Path):
+        """When pastedContents has contentHash instead of content, resolve from paste-cache."""
+        cache_dir = tmp_path / "paste-cache"
+        cache_dir.mkdir()
+        (cache_dir / "abcdef1234567890.txt").write_text("cached paste content here")
+
+        entry = {
+            "display": "[Pasted text #1 +5 lines]\n\ncheck this",
+            "pastedContents": {"1": {"id": 1, "type": "text", "contentHash": "abcdef1234567890"}},
+        }
+        result = resolve_pasted_content(entry, paste_cache_dir=cache_dir)
+        assert "cached paste content here" in result
+        assert "[Pasted text" not in result
+        assert "check this" in result
+
+    def test_hash_referenced_paste_missing_cache_file(self, tmp_path: Path):
+        """When cache file doesn't exist, placeholder stays."""
+        cache_dir = tmp_path / "paste-cache"
+        cache_dir.mkdir()
+
+        entry = {
+            "display": "[Pasted text #1 +5 lines]",
+            "pastedContents": {"1": {"id": 1, "type": "text", "contentHash": "nonexistent_hash"}},
+        }
+        result = resolve_pasted_content(entry, paste_cache_dir=cache_dir)
+        assert "[Pasted text #1 +5 lines]" in result
+
+    def test_inline_content_preferred_over_hash(self, tmp_path: Path):
+        """Inline content takes precedence over contentHash."""
+        cache_dir = tmp_path / "paste-cache"
+        cache_dir.mkdir()
+        (cache_dir / "somehash.txt").write_text("cached version")
+
+        entry = {
+            "display": "[Pasted text #1]",
+            "pastedContents": {
+                "1": {
+                    "id": 1,
+                    "type": "text",
+                    "content": "inline version",
+                    "contentHash": "somehash",
+                }
+            },
+        }
+        result = resolve_pasted_content(entry, paste_cache_dir=cache_dir)
+        assert "inline version" in result
+        assert "cached version" not in result
+
 
 class TestSlugify:
     def test_basic_slug(self):

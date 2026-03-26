@@ -5,7 +5,7 @@
 | **Language** | Python 3.10+, zero runtime deps |
 | **Entry points** | `promptvault` → `search:main`, `promptvault-sync` → `sync:main` |
 | **Source** | `promptvault/sync.py`, `promptvault/search.py`, `promptvault/hook.py` |
-| **Tests** | `tests/` — 187 tests, pytest, synthetic data only |
+| **Tests** | `tests/` — 190 tests, pytest, synthetic data only |
 | **Lint/Format** | ruff (line-length=100) |
 | **Python env** | `/opt/anaconda3/envs/promptvault` |
 
@@ -26,6 +26,7 @@ prompts_fts USING fts5(prompt_text, content=prompts)  -- BM25 ranking
 | `PROMPTVAULT_DB` | `~/.claude/prompt-library/prompts.db` |
 | `PROMPTVAULT_VAULT` | `~/.claude/prompt-library/vault` |
 | `PROMPTVAULT_PROJECTS` | `~/.claude/projects` |
+| `PROMPTVAULT_PASTE_CACHE` | `~/.claude/paste-cache` |
 
 ### Testing
 

@@ -15,6 +15,7 @@ from pathlib import Path
 DEFAULT_HISTORY_PATH = Path.home() / ".claude" / "history.jsonl"
 DEFAULT_OUTPUT_DIR = Path.home() / ".claude" / "prompt-library"
 DEFAULT_PROJECTS_DIR = Path.home() / ".claude" / "projects"
+DEFAULT_PASTE_CACHE_DIR = Path.home() / ".claude" / "paste-cache"
 
 SLASH_COMMANDS = frozenset(
     {
@@ -61,23 +62,43 @@ def load_session_summaries(projects_dir: Path) -> dict[str, str]:
     return summaries
 
 
-def resolve_pasted_content(entry: dict) -> str:
+def _resolve_paste_content(paste_info: dict, paste_cache_dir: Path) -> str:
+    """Resolve pasted content from inline content or paste-cache file."""
+    content = paste_info.get("content", "")
+    if content:
+        return content.strip()
+    # Fallback: Claude Code stores large pastes as hash-referenced files
+    content_hash = paste_info.get("contentHash", "")
+    if content_hash:
+        cache_file = paste_cache_dir / f"{content_hash}.txt"
+        if cache_file.exists():
+            try:
+                return cache_file.read_text(encoding="utf-8").strip()
+            except OSError:
+                pass
+    return ""
+
+
+def resolve_pasted_content(entry: dict, paste_cache_dir: Path | None = None) -> str:
     """Replace [Pasted text #N ...] placeholders with actual pasted content."""
     display = entry["display"]
     pasted = entry.get("pastedContents", {})
     if not pasted:
         return display
 
+    if paste_cache_dir is None:
+        paste_cache_dir = DEFAULT_PASTE_CACHE_DIR
+
     for key, paste_info in pasted.items():
         if not isinstance(paste_info, dict):
             continue
-        content = paste_info.get("content", "")
+        content = _resolve_paste_content(paste_info, paste_cache_dir)
         if not content:
             continue
         # Match [Pasted text #N] or [Pasted text #N +M lines]
         pattern = rf"\[Pasted text #{re.escape(key)}[^\]]*\]"
         # re.sub treats backslashes in replacement as escapes — use a lambda to avoid that
-        display = re.sub(pattern, lambda _: content.strip(), display)
+        display = re.sub(pattern, lambda _: content, display)
 
     return display
 

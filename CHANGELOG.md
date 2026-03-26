@@ -1,3 +1,14 @@
+## 0.0.7 (2026-03-26)
+
+### Feat
+
+- add bookmarks and other improvements
+
+### Fix
+
+- adjust graphics
+- improve readme
+
 ## 0.0.6 (2026-03-26)
 
 ### Fix

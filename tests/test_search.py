@@ -363,6 +363,27 @@ class TestSynonymExpansion:
         for syn in SYNONYMS["fix"]:
             assert syn in result
 
+    def test_fts_prepare_query_strips_special_chars(self):
+        """FTS5 special characters are sanitized; hyphens become word separators."""
+        # Trailing hyphen (the reported bug) — hyphen stripped, "best" is the last word
+        assert _fts_prepare_query("best-") == "best*"
+        # Hyphen splits into two words: "pre" AND "commit*"
+        assert _fts_prepare_query("pre-commit") == "pre commit*"
+        # "best-p" splits into "best" AND "p*" (typeahead on last token)
+        assert _fts_prepare_query("best-p") == "best p*"
+        # Quotes stripped
+        assert _fts_prepare_query('"best"') == "best*"
+        # Only special chars → empty
+        assert _fts_prepare_query("-") == ""
+        # "fix-" → "fix" (synonym expanded), "auth" → wildcard
+        result = _fts_prepare_query("fix- auth")
+        assert "OR" in result  # "fix" expanded as synonym
+        assert "auth*" in result
+        # Slash stripped — FTS5 chokes on "/" (syntax error near "/")
+        assert _fts_prepare_query("/best-pr") == "best pr*"
+        assert _fts_prepare_query("/best") == "best*"
+        assert _fts_prepare_query("/") == ""
+
 
 # ---------------------------------------------------------------------------
 # A2: Tags database CRUD

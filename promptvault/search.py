@@ -335,22 +335,37 @@ def _build_prompt_lines(conn: sqlite3.Connection, query: str | None = None) -> l
     return lines
 
 
+_FTS_STRIP_RE = re.compile(r'["+*()^~:/]')
+
+
+def _fts_tokenize(query: str) -> list[str]:
+    """Split query into clean FTS5 tokens.
+
+    Hyphens act as word separators (e.g. "best-practices" → ["best", "practices"]).
+    Other FTS5 special characters are stripped entirely.
+    """
+    # Replace hyphens with spaces first (word separator), then strip remaining specials
+    normalized = query.replace("-", " ")
+    cleaned = _FTS_STRIP_RE.sub("", normalized)
+    return cleaned.split()
+
+
 def _fts_prepare_query(query: str) -> str:
     """Prepare query for FTS5: expand synonyms and add prefix wildcard.
 
     Words matching SYNONYMS keys are expanded to OR groups for broader recall.
     The last word gets a prefix wildcard for typeahead matching.
+    FTS5 special characters are sanitized to prevent syntax errors.
     """
-    words = query.strip().split()
+    words = _fts_tokenize(query)
     if not words:
-        return query
+        return ""
     parts: list[str] = []
     for i, word in enumerate(words):
         lower = word.lower()
         is_last = i == len(words) - 1
         if lower in SYNONYMS:
             syns = SYNONYMS[lower]
-            # Last synonym word gets prefix wildcard for typeahead
             if is_last:
                 expanded = " OR ".join(s + "*" for s in syns)
             else:
@@ -373,10 +388,11 @@ def _fts_session_ids(conn: sqlite3.Connection, query: str) -> list[str]:
     fts_query = _fts_prepare_query(query)
     try:
         ids = [r[0] for r in conn.execute(sql, (fts_query,)).fetchall()]
-        if not ids and " " in query.strip():
-            words = query.strip().split()
-            or_query = " OR ".join(w + "*" for w in words)
-            ids = [r[0] for r in conn.execute(sql, (or_query,)).fetchall()]
+        if not ids:
+            words = _fts_tokenize(query)
+            if len(words) > 1:
+                or_query = " OR ".join(w + "*" for w in words)
+                ids = [r[0] for r in conn.execute(sql, (or_query,)).fetchall()]
         return ids
     except sqlite3.OperationalError:
         return []
@@ -881,10 +897,11 @@ def _fts_search(conn: sqlite3.Connection, query: str, limit: int = 200) -> list:
     try:
         rows = conn.execute(sql, (fts_query, limit)).fetchall()
         # Fallback to OR if no results with AND
-        if not rows and " " in query.strip():
-            words = query.strip().split()
-            or_query = " OR ".join(w + "*" for w in words)
-            rows = conn.execute(sql, (or_query, limit)).fetchall()
+        if not rows:
+            words = _fts_tokenize(query)
+            if len(words) > 1:
+                or_query = " OR ".join(w + "*" for w in words)
+                rows = conn.execute(sql, (or_query, limit)).fetchall()
         return rows
     except sqlite3.OperationalError:
         return []

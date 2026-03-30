@@ -1,257 +1,313 @@
 """Visual testing tool for promptvault's fzf interface.
 
-Uses `expect` to drive fzf in a real pseudo-terminal and captures the
-screen buffer content. This gives an accurate representation of what the
-user sees.
+Uses pexpect to spawn pv in a pseudo-terminal and pyte to render the
+terminal output into a queryable screen buffer. Provides assertion flags
+for programmatic verification after UI changes.
 
 Usage:
-    python tests/visual_test.py                    # Default view, capture after 2s
-    python tests/visual_test.py --keys ctrl-t      # Send ctrl-t and capture
-    python tests/visual_test.py --keys tab tab      # Send two tabs
-    python tests/visual_test.py --query pytest      # Start with query
+    python tests/visual_test.py                       # Default view
+    python tests/visual_test.py --keys ctrl-t         # Send ctrl-t
+    python tests/visual_test.py --query best-pr       # Type query into fzf
+    python tests/visual_test.py --cols 80             # Narrow terminal
+
+Assertion mode (programmatic verification):
+    python tests/visual_test.py --query best-pr --assert-min 1
+    python tests/visual_test.py --query best-pr --assert-no-text "File not found"
+    python tests/visual_test.py --keys ctrl-t --assert-text "prompt>"
+    python tests/visual_test.py --json                # Machine-readable output
+
+Requirements: pexpect, pyte (pip install pexpect pyte)
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
-import subprocess
+import re
 import sys
-import tempfile
+import time
 
-# Key code map for expect send syntax
-EXPECT_KEY_MAP = {
-    "ctrl-t": r"\x14",
-    "ctrl-p": r"\x10",
-    "ctrl-d": r"\x04",
-    "ctrl-g": r"\x07",
-    "ctrl-b": r"\x02",
-    "ctrl-o": r"\x0f",
-    "ctrl-x": r"\x18",
-    "ctrl-y": r"\x19",
-    "ctrl-e": r"\x05",
-    "ctrl-/": r"\x1f",
-    "tab": r"\t",
-    "btab": r"\x1b\[Z",
-    "enter": r"\r",
-    "esc": r"\x1b",
-    "up": r"\x1b\[A",
-    "down": r"\x1b\[B",
-    "alt-r": r"\x1br",
+import pexpect
+import pyte
+
+# Control character codes for fzf keybindings
+KEY_MAP = {
+    "ctrl-t": "\x14",
+    "ctrl-p": "\x10",
+    "ctrl-d": "\x04",
+    "ctrl-g": "\x07",
+    "ctrl-b": "\x02",
+    "ctrl-o": "\x0f",
+    "ctrl-x": "\x18",
+    "ctrl-y": "\x19",
+    "ctrl-e": "\x05",
+    "ctrl-/": "\x1f",
+    "tab": "\t",
+    "btab": "\x1b[Z",
+    "enter": "\r",
+    "esc": "\x1b",
+    "up": "\x1b[A",
+    "down": "\x1b[B",
+    "alt-r": "\x1br",
 }
 
 
-def build_expect_script(
-    query: str | None = None,
-    keys: list[str] | None = None,
-    wait_ms: int = 2000,
-    cols: int = 140,
-    rows: int = 45,
-    capture_file: str = "/tmp/pv_screen.txt",
-) -> str:
-    """Build an expect script that launches pv, sends keys, and captures screen."""
-    pv_cmd = f"{sys.executable} -m promptvault.search"
-    if query:
-        pv_cmd += f" search {query}"
+class FzfHarness:
+    """Drive pv's fzf UI via pexpect + pyte for reliable screen capture."""
 
-    send_cmds = ""
-    if keys:
-        for key in keys:
-            code = EXPECT_KEY_MAP.get(key, key)
-            send_cmds += f'sleep 0.5\nsend "{code}"\n'
-
-    return f'''#!/usr/bin/expect -f
-set timeout 10
-set env(TERM) xterm-256color
-set env(LINES) {rows}
-set env(COLUMNS) {cols}
-
-# Start in a sized terminal
-proc stty_init {{}} {{}}
-set stty_init "rows {rows} cols {cols}"
-
-spawn -noecho bash -c "{pv_cmd}"
-
-# Wait for fzf to render
-sleep [expr {{{wait_ms} / 1000.0}}]
-
-{send_cmds}
-
-# Wait for screen to settle after keys
-sleep 1
-
-# Send escape to quit
-send "\\x1b"
-sleep 0.3
-
-# Capture exit
-expect eof
-'''
-
-
-def capture_screen_via_script(
-    query: str | None = None,
-    keys: list[str] | None = None,
-    wait_ms: int = 2000,
-    cols: int = 140,
-    rows: int = 45,
-) -> str:
-    """Use macOS `script` command to record terminal session, then parse it."""
-    pv_cmd = f"{sys.executable} -m promptvault.search"
-    if query:
-        pv_cmd += f" search {query}"
-
-    # Build the key sequence to send via a helper script
-    key_sequence = ""
-    if keys:
-        for key in keys:
-            code = EXPECT_KEY_MAP.get(key, key)
-            key_sequence += f"printf '{code}'\nsleep 0.5\n"
-
-    # Create a shell script that:
-    # 1. Launches pv in background
-    # 2. Waits, sends keys, waits, sends ESC
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".sh", delete=False) as f:
-        f.write(f"""#!/bin/bash
-export TERM=xterm-256color
-export LINES={rows}
-export COLUMNS={cols}
-stty rows {rows} cols {cols} 2>/dev/null
-
-{pv_cmd} &
-PV_PID=$!
-
-sleep {wait_ms / 1000.0}
-
-{key_sequence}
-
-sleep 1
-
-# Send ESC to quit
-kill -TERM $PV_PID 2>/dev/null
-wait $PV_PID 2>/dev/null
-""")
-        script_path = f.name
-
-    os.chmod(script_path, 0o755)
-
-    output_file = "/tmp/pv_visual_output.txt"
-
-    # Use `script` to record
-    result = subprocess.run(
-        ["script", "-q", output_file, "bash", script_path],
-        capture_output=True,
-        text=True,
-        timeout=wait_ms // 1000 + 10,
-        env={**os.environ, "TERM": "xterm-256color", "LINES": str(rows), "COLUMNS": str(cols)},
-    )
-
-    os.unlink(script_path)
-
-    if os.path.exists(output_file):
-        with open(output_file) as f:
-            return f.read()
-    return result.stdout
-
-
-def capture_via_expect(
-    query: str | None = None,
-    keys: list[str] | None = None,
-    wait_ms: int = 2000,
-    cols: int = 140,
-    rows: int = 45,
-) -> str:
-    """Use expect to drive fzf and capture output via script recording."""
-    expect_script = build_expect_script(query, keys, wait_ms, cols, rows)
-
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".exp", delete=False) as f:
-        f.write(expect_script)
-        expect_path = f.name
-
-    os.chmod(expect_path, 0o755)
-
-    typescript_file = "/tmp/pv_typescript.txt"
-
-    # Run expect under `script` to capture full terminal output
-    try:
-        subprocess.run(
-            ["script", "-q", typescript_file, "expect", expect_path],
-            capture_output=True,
-            text=True,
-            timeout=wait_ms // 1000 + 15,
-            env={
-                **os.environ,
-                "TERM": "xterm-256color",
-                "LINES": str(rows),
-                "COLUMNS": str(cols),
-            },
+    def __init__(self, rows: int = 45, cols: int = 140):
+        self.rows = rows
+        self.cols = cols
+        self.screen = pyte.Screen(cols, rows)
+        self.stream = pyte.ByteStream(self.screen)
+        pv_cmd = f"{sys.executable} -m promptvault.search"
+        self.child = pexpect.spawn(
+            "bash",
+            ["-c", pv_cmd],
+            dimensions=(rows, cols),
+            encoding=None,  # bytes mode for pyte
+            env={**os.environ, "TERM": "xterm-256color"},
         )
-    except subprocess.TimeoutExpired:
-        pass
-    finally:
-        os.unlink(expect_path)
 
-    if os.path.exists(typescript_file):
-        with open(typescript_file) as f:
-            raw = f.read()
-        os.unlink(typescript_file)
-        return raw
-    return ""
+    def send(self, text: str):
+        """Send raw text/keystrokes to fzf."""
+        self.child.send(text.encode())
+
+    def send_key(self, key_name: str):
+        """Send a named key (e.g. 'ctrl-t', 'tab', 'enter')."""
+        code = KEY_MAP.get(key_name, key_name)
+        self.child.send(code.encode())
+
+    def _read_output(self):
+        """Read all available output from the PTY and feed to pyte.
+
+        Handles DSR (Device Status Report): fzf sends ESC[6n to ask cursor
+        position and hangs until the terminal replies with ESC[row;colR.
+        """
+        while True:
+            try:
+                data = self.child.read_nonblocking(size=65536, timeout=0.1)
+                if data:
+                    if b"\x1b[6n" in data:
+                        row = self.screen.cursor.y + 1
+                        col = self.screen.cursor.x + 1
+                        self.child.send(f"\x1b[{row};{col}R".encode())
+                    self.stream.feed(data)
+            except (pexpect.TIMEOUT, pexpect.EOF):
+                break
+
+    def capture(self) -> list[str]:
+        """Read PTY output and return screen lines from pyte."""
+        self._read_output()
+        lines = []
+        for row in range(self.rows):
+            line = "".join(self.screen.buffer[row][col].data for col in range(self.cols)).rstrip()
+            lines.append(line)
+        # Strip trailing empty lines
+        while lines and not lines[-1]:
+            lines.pop()
+        return lines
+
+    def until(self, predicate, timeout: float = 10.0) -> list[str]:
+        """Poll screen until predicate(lines) is truthy. Retry every 100ms."""
+        start = time.time()
+        last_lines: list[str] = []
+        while True:
+            last_lines = self.capture()
+            try:
+                if predicate(last_lines):
+                    return last_lines
+            except (AssertionError, IndexError, ValueError):
+                pass
+            if time.time() - start > timeout:
+                screen_dump = "\n".join(last_lines)
+                raise TimeoutError(
+                    f"Visual test timeout after {timeout}s.\n"
+                    f"Screen ({len(last_lines)} lines):\n{screen_dump}"
+                )
+            time.sleep(0.1)
+
+    def close(self):
+        """Send Escape and close the child process."""
+        try:
+            self.child.send(b"\x1b")
+            time.sleep(0.3)
+            self.child.close(force=True)
+        except Exception:
+            pass
 
 
-def parse_screen(raw: str, rows: int = 45, cols: int = 140) -> str:
-    """Parse raw script output into readable lines, stripping most ANSI codes."""
-    import re
+def parse_fzf_state(lines: list[str]) -> dict:
+    """Extract structured state from captured fzf screen lines."""
+    state: dict = {
+        "query": "",
+        "result_count": -1,
+        "total": -1,
+        "matched": -1,
+        "prompt_mode": "unknown",
+        "has_preview": False,
+        "preview_text": "",
+        "footer_visible": False,
+        "footer_lines": [],
+        "screen_lines": lines,
+        "raw_line_count": len(lines),
+    }
 
-    # Strip ANSI escape sequences
-    clean = re.sub(r"\x1b\[[0-9;]*[a-zA-Z]", "", raw)
-    clean = re.sub(r"\x1b\].*?\x07", "", clean)  # OSC sequences
-    clean = re.sub(r"\x1b[()][012AB]", "", clean)  # character set
-    clean = re.sub(r"\x1b=", "", clean)  # DECKPAM
-    clean = re.sub(r"\x1b>", "", clean)  # DECKPNM
-    clean = re.sub(r"\x1b\[?[0-9;]*[hlm]", "", clean)  # modes
-    clean = clean.replace("\r\n", "\n").replace("\r", "\n")
-
-    lines = clean.split("\n")
-    # Filter out empty lines and take meaningful content
-    meaningful = []
     for line in lines:
-        stripped = line.rstrip()
-        if stripped:
-            meaningful.append(stripped[:cols])
+        prompt_match = re.search(r"(conv|prompt)(?:\s*\[.*?\])?>\s*(.*)", line)
+        if prompt_match:
+            state["prompt_mode"] = prompt_match.group(1)
+            # Strip fzf border chars from query
+            state["query"] = prompt_match.group(2).strip().rstrip("│").strip()
 
-    return "\n".join(meaningful[-rows:])
+        count_match = re.search(r"(\d+)/(\d+)\s*\((\d+)\)", line)
+        if count_match:
+            state["matched"] = int(count_match.group(1))
+            state["result_count"] = int(count_match.group(2))
+            state["total"] = int(count_match.group(2))
+
+        conv_match = re.search(r"(\d+)\s+conversations", line)
+        if conv_match:
+            state["total"] = int(conv_match.group(1))
+
+        if "^t mode" in line or "^o open" in line:
+            state["footer_visible"] = True
+            state["footer_lines"].append(line.strip())
+
+        if "File not found" in line:
+            state["has_preview"] = True
+            state["preview_text"] = "File not found"
+        elif line.strip().startswith("#") and ">" not in line:
+            state["has_preview"] = True
+            if not state["preview_text"]:
+                state["preview_text"] = line.strip()
+
+    return state
+
+
+def run_assertions(state: dict, args: argparse.Namespace) -> list[str]:
+    """Check assertions against parsed state. Returns list of failure messages."""
+    failures = []
+
+    if args.assert_min is not None:
+        actual = state["matched"]
+        if actual < args.assert_min:
+            failures.append(f"FAIL: assert-min {args.assert_min}, got {actual} matched results")
+
+    if args.assert_count is not None:
+        actual = state["matched"]
+        if actual != args.assert_count:
+            failures.append(f"FAIL: assert-count {args.assert_count}, got {actual}")
+
+    if args.assert_text:
+        screen_text = "\n".join(state["screen_lines"])
+        for text in args.assert_text:
+            if text not in screen_text:
+                failures.append(f"FAIL: assert-text '{text}' not found in screen")
+
+    if args.assert_no_text:
+        screen_text = "\n".join(state["screen_lines"])
+        for text in args.assert_no_text:
+            if text in screen_text:
+                failures.append(f"FAIL: assert-no-text '{text}' WAS found in screen")
+
+    return failures
 
 
 def main():
     parser = argparse.ArgumentParser(description="Visual test tool for promptvault fzf UI")
-    parser.add_argument("--query", help="Search query to start with")
+    parser.add_argument("--query", help="Search query to type into fzf")
     parser.add_argument("--keys", nargs="+", help="Keys to send (e.g., ctrl-t tab)")
-    parser.add_argument("--wait", type=int, default=2000, help="Ms to wait before keys")
-    parser.add_argument("--raw", action="store_true", help="Show raw output")
+    parser.add_argument("--wait", type=int, default=3000, help="Ms to wait for results")
     parser.add_argument("--rows", type=int, default=45, help="Terminal rows")
     parser.add_argument("--cols", type=int, default=140, help="Terminal cols")
+
+    # Assertion flags
+    parser.add_argument("--assert-min", type=int, default=None, help="Assert at least N results")
+    parser.add_argument("--assert-count", type=int, default=None, help="Assert exactly N results")
+    parser.add_argument(
+        "--assert-text", action="append", default=None, help="Assert text appears in screen"
+    )
+    parser.add_argument(
+        "--assert-no-text",
+        action="append",
+        default=None,
+        help="Assert text does NOT appear in screen",
+    )
+    parser.add_argument("--json", action="store_true", help="Output structured JSON")
     args = parser.parse_args()
 
-    print(f"Launching pv (wait={args.wait}ms, keys={args.keys})...", file=sys.stderr)
-    raw = capture_via_expect(
-        query=args.query,
-        keys=args.keys,
-        wait_ms=args.wait,
-        cols=args.cols,
-        rows=args.rows,
+    has_assertions = any(
+        [
+            args.assert_min is not None,
+            args.assert_count is not None,
+            args.assert_text,
+            args.assert_no_text,
+        ]
     )
 
-    if args.raw:
-        print(repr(raw[:5000]))
-    else:
-        screen = parse_screen(raw, rows=args.rows, cols=args.cols)
-        print(screen)
+    if not has_assertions and not args.json:
+        print(f"Launching pv (wait={args.wait}ms, keys={args.keys})...", file=sys.stderr)
+
+    wait_sec = args.wait / 1000.0
+    harness = FzfHarness(rows=args.rows, cols=args.cols)
+
+    try:
+        # Wait for fzf to initialize (sync + render)
+        harness.until(
+            lambda lines: any("conv>" in ln or "prompt>" in ln for ln in lines),
+            timeout=wait_sec + 10,
+        )
+
+        # Type query if provided
+        if args.query:
+            harness.send(args.query)
+            # Wait for fzf reload to complete
+            time.sleep(min(wait_sec, 3.0))
+
+        # Send additional keys
+        if args.keys:
+            for key in args.keys:
+                harness.send_key(key)
+                time.sleep(0.5)
+
+        # Final capture
+        time.sleep(0.5)
+        lines = harness.capture()
+
+    finally:
+        harness.close()
+
+    state = parse_fzf_state(lines)
+    screen_text = "\n".join(lines)
+
+    if args.json:
+        output = {k: v for k, v in state.items() if k != "screen_lines"}
+        output["screen_excerpt"] = screen_text[:500]
+        print(json.dumps(output, indent=2))
+
+    if has_assertions:
+        failures = run_assertions(state, args)
+        if failures:
+            for f in failures:
+                print(f, file=sys.stderr)
+            if not args.json:
+                print("\n--- Screen capture ---", file=sys.stderr)
+                print(screen_text[:2000], file=sys.stderr)
+            sys.exit(1)
+        else:
+            if not args.json:
+                print("ALL ASSERTIONS PASSED", file=sys.stderr)
+            sys.exit(0)
+
+    if not args.json:
+        print(screen_text)
 
     # Save for inspection
     out_path = "/tmp/pv_visual_test.txt"
     with open(out_path, "w") as f:
-        f.write(parse_screen(raw, rows=args.rows, cols=args.cols))
+        f.write(screen_text)
     print(f"\nSaved to {out_path}", file=sys.stderr)
 
 

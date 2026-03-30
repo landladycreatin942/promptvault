@@ -1,3 +1,13 @@
+## 0.0.8 (2026-03-30)
+
+### Feat
+
+- improvements
+
+### Fix
+
+- improvements to ui
+
 ## 0.0.7 (2026-03-26)
 
 ### Feat

